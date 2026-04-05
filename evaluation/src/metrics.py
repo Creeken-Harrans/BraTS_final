@@ -18,6 +18,7 @@ from project import (
     resolve_fold_validation_dir,
 )
 from training.src.data.labels import load_brats_label_manager
+from training.src.utils import make_json_safe
 
 
 def label_or_region_to_key(label_or_region: int | tuple[int, ...]) -> str:
@@ -43,7 +44,7 @@ def save_summary_json(results: dict, output_file: str | Path) -> None:
             for key, value in results["metric_per_case"][index]["metrics"].items()
         }
     Path(output_file).write_text(
-        json.dumps(converted, indent=2, ensure_ascii=False) + "\n",
+        json.dumps(make_json_safe(converted), indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 

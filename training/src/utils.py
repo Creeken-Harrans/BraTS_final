@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import numpy as np
@@ -13,7 +14,11 @@ def make_json_safe(value: Any) -> Any:
     if isinstance(value, np.ndarray):
         return make_json_safe(value.tolist())
     if isinstance(value, np.generic):
-        return value.item()
+        return make_json_safe(value.item())
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            return None
+        return value
     return value
 
 
