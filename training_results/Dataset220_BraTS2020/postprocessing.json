@@ -1,0 +1,5 @@
+{
+  "enabled": false,
+  "reason": "BraTS_final does not implement automatic postprocessing selection.",
+  "summary_path": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/BraTSFixed3DUNet__ProjectPlans__fixed_3d_fullres/crossval_results_folds_0_1_2_3_4/summary.json"
+}

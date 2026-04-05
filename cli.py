@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -20,6 +21,45 @@ from project import (
     get_project_root,
     resolve_fold_validation_dir,
 )
+
+
+def _resolve_latest_prediction_dir() -> Path:
+    evaluation_root = get_evaluation_root()
+    candidates: list[tuple[float, Path]] = []
+    if evaluation_root.is_dir():
+        for sample_selection in evaluation_root.glob("*/sample_selection.json"):
+            prediction_dir = sample_selection.parent
+            if any(prediction_dir.glob("*.nii.gz")):
+                candidates.append((sample_selection.stat().st_mtime, prediction_dir.resolve()))
+    if not candidates:
+        raise RuntimeError(
+            "evaluate could not find a previous predict output automatically.\n"
+            "Run `python run.py predict ...` first, or pass --pred-dir / --fold explicitly."
+        )
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    return candidates[0][1]
+
+
+def _resolve_report_output_dir(fold: int | None, pred_dir: Path, output_dir: str | None) -> Path:
+    if output_dir is not None:
+        return Path(output_dir).resolve()
+    if fold is not None:
+        return get_fold_root(fold) / "report"
+    if pred_dir.parent == get_project_root():
+        return get_evaluation_report_root() / pred_dir.name
+    return pred_dir.parent / "report"
+
+
+def _remove_path(path: Path) -> bool:
+    if not path.exists():
+        return False
+    if path.is_dir():
+        shutil.rmtree(path)
+    else:
+        path.unlink()
+    return True
+
+
 def cmd_doctor(_: argparse.Namespace) -> int:
     from training.src.core.runtime import resolve_training_data_layout
 
@@ -175,14 +215,17 @@ def cmd_predict(args: argparse.Namespace) -> int:
 
 def cmd_evaluate(args: argparse.Namespace) -> int:
     from evaluation.src.evaluate_predictions import evaluate_prediction_folder
+    from evaluation.src.generate_evaluation_report import generate_evaluation_report
 
     gt_dir = Path(args.gt_dir).resolve() if args.gt_dir else get_gt_segmentations_dir()
+    auto_selected_prediction = False
     if args.pred_dir is not None:
         pred_dir = Path(args.pred_dir).resolve()
     elif args.fold is not None:
         pred_dir = resolve_fold_validation_dir(args.fold)
     else:
-        raise RuntimeError("evaluate requires either --pred-dir or --fold")
+        pred_dir = _resolve_latest_prediction_dir()
+        auto_selected_prediction = True
 
     output_file = (
         Path(args.output_file).resolve()
@@ -195,85 +238,60 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
         gt_dir=gt_dir,
         output_file=output_file,
         num_processes=args.num_processes,
-        chill=True if args.fold is not None and args.pred_dir is None else args.chill,
+        chill=(
+            True
+            if (args.fold is not None and args.pred_dir is None) or auto_selected_prediction
+            else args.chill
+        ),
     )
-    print(f"[OK] Evaluation summary written to: {output_file}")
-    return 0
-
-
-def cmd_report(args: argparse.Namespace) -> int:
-    from evaluation.src.evaluate_predictions import evaluate_prediction_folder
-    from evaluation.src.generate_evaluation_report import generate_evaluation_report
-
     raw_dataset_dir = (
         Path(args.raw_dataset_dir).resolve()
         if args.raw_dataset_dir
         else get_primary_raw_dataset_dir()
     )
-
-    if args.pred_dir is not None:
-        pred_dir = Path(args.pred_dir).resolve()
-    elif args.fold is not None:
-        pred_dir = resolve_fold_validation_dir(args.fold)
-    else:
-        raise RuntimeError("report requires either --pred-dir or --fold")
-
-    if args.summary_file is not None:
-        summary_file = Path(args.summary_file).resolve()
-    else:
-        summary_file = pred_dir / "summary.json"
-
-    if args.output_dir is not None:
-        output_dir = Path(args.output_dir).resolve()
-    elif args.fold is not None:
-        output_dir = get_fold_root(args.fold) / "report"
-    elif pred_dir.parent == get_project_root():
-        output_dir = get_evaluation_report_root() / pred_dir.name
-    else:
-        output_dir = pred_dir.parent / "report"
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    if not summary_file.is_file():
-        evaluate_prediction_folder(
-            pred_dir,
-            gt_dir=Path(args.gt_dir).resolve() if args.gt_dir else get_gt_segmentations_dir(),
-            output_file=summary_file,
-            num_processes=args.num_processes,
-            chill=args.chill or args.fold is not None,
-        )
-
+    report_output_dir = _resolve_report_output_dir(args.fold, pred_dir, args.report_output_dir)
+    report_output_dir.mkdir(parents=True, exist_ok=True)
     sample_selection_file = (
         Path(args.sample_selection_file).resolve()
         if args.sample_selection_file is not None
         else None
     )
     generate_evaluation_report(
-        summary_file=summary_file,
+        summary_file=output_file,
         predictions_dir=pred_dir,
         raw_dataset_dir=raw_dataset_dir,
-        output_dir=output_dir,
+        output_dir=report_output_dir,
         sample_selection_file=sample_selection_file,
     )
-    print(f"[OK] Evaluation report written to: {output_dir}")
+    if auto_selected_prediction:
+        print(f"[OK] Auto-selected prediction directory: {pred_dir}")
+    print(f"[OK] Evaluation summary written to: {output_file}")
+    print(f"[OK] Evaluation report written to: {report_output_dir}")
     return 0
 
 
-def cmd_accumulate_cv(args: argparse.Namespace) -> int:
-    from evaluation.src.accumulate_cv_results import accumulate_cv_results
+def cmd_clean_last_results(_: argparse.Namespace) -> int:
+    try:
+        pred_dir = _resolve_latest_prediction_dir()
+    except RuntimeError:
+        print("[OK] No previous auto-managed predict/evaluate results were found.")
+        return 0
 
-    output_dir = (
-        Path(args.output_dir).resolve()
-        if args.output_dir
-        else (get_evaluation_root() / f"crossval_folds_{'_'.join(str(f) for f in args.folds)}")
-    )
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
-    accumulate_cv_results(
-        output_dir,
-        folds=args.folds,
-        num_processes=args.num_processes,
-        overwrite=not args.no_overwrite,
-    )
-    print(f"[OK] Cross-validation summary written to: {output_dir / 'summary.json'}")
+    summary_file = get_evaluation_root() / f"{pred_dir.name}_summary.json"
+    report_dir = _resolve_report_output_dir(None, pred_dir, None)
+
+    removed: list[Path] = []
+    for path in (pred_dir, summary_file, report_dir):
+        if _remove_path(path):
+            removed.append(path)
+
+    if not removed:
+        print("[OK] No previous auto-managed predict/evaluate results were found.")
+        return 0
+
+    print(f"[OK] Cleaned latest predict/evaluate results for: {pred_dir.name}")
+    for path in removed:
+        print(f"[OK] Removed: {path}")
     return 0
 
 
@@ -338,31 +356,18 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--pred-dir", type=str, default=None, help="Prediction directory to evaluate")
     evaluate.add_argument("--gt-dir", type=str, default=None, help="Ground-truth directory")
     evaluate.add_argument("--output-file", type=str, default=None)
+    evaluate.add_argument("--raw-dataset-dir", type=str, default=None, help="Raw dataset directory with imagesTr")
+    evaluate.add_argument("--report-output-dir", type=str, default=None, help="Report output directory")
+    evaluate.add_argument("--sample-selection-file", type=str, default=None)
     evaluate.add_argument("--num-processes", type=int, default=1)
     evaluate.add_argument("--chill", action="store_true")
     evaluate.set_defaults(func=cmd_evaluate)
 
-    report = subparsers.add_parser("report", help="Generate a full evaluation report directory")
-    report.add_argument("--fold", type=int, default=None, help="Use fold<n>/validation as prediction folder")
-    report.add_argument("--pred-dir", type=str, default=None, help="Prediction directory to report on")
-    report.add_argument("--summary-file", type=str, default=None, help="Existing summary.json to reuse")
-    report.add_argument("--gt-dir", type=str, default=None, help="Ground-truth directory for auto-evaluate fallback")
-    report.add_argument("--raw-dataset-dir", type=str, default=None, help="Raw dataset directory with imagesTr")
-    report.add_argument("--output-dir", type=str, default=None, help="Report output directory")
-    report.add_argument("--sample-selection-file", type=str, default=None)
-    report.add_argument("--num-processes", type=int, default=1)
-    report.add_argument("--chill", action="store_true")
-    report.set_defaults(func=cmd_report)
-
-    accumulate = subparsers.add_parser(
-        "accumulate-cv",
-        help="Merge validation outputs from multiple folds and re-evaluate them",
+    clean_last = subparsers.add_parser(
+        "clean-last-results",
+        help="Remove the latest auto-managed predict/evaluate outputs",
     )
-    accumulate.add_argument("--folds", nargs="+", type=int, default=get_default_folds())
-    accumulate.add_argument("--output-dir", type=str, default=None)
-    accumulate.add_argument("--num-processes", type=int, default=1)
-    accumulate.add_argument("--no-overwrite", action="store_true")
-    accumulate.set_defaults(func=cmd_accumulate_cv)
+    clean_last.set_defaults(func=cmd_clean_last_results)
 
     return parser
 

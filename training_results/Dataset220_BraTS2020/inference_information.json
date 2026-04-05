@@ -1,0 +1,35 @@
+{
+  "dataset_name_or_id": "Dataset220_BraTS2020",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "considered_models": [
+    {
+      "trainer": "BraTSFixed3DUNet",
+      "plans": "ProjectPlans",
+      "configuration": "fixed_3d_fullres"
+    }
+  ],
+  "ensembling_allowed": false,
+  "all_results": {
+    "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/BraTSFixed3DUNet__ProjectPlans__fixed_3d_fullres/crossval_results_folds_0_1_2_3_4/summary.json": 0.8549823309744586
+  },
+  "best_model_or_ensemble": {
+    "result_on_crossval_pre_pp": 0.8549823309744586,
+    "result_on_crossval_post_pp": 0.8549823309744586,
+    "summary_path": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/BraTSFixed3DUNet__ProjectPlans__fixed_3d_fullres/crossval_results_folds_0_1_2_3_4/summary.json",
+    "postprocessing_file": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/Dataset220_BraTS2020/postprocessing.json",
+    "some_plans_file": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed/Dataset220_BraTS2020/reference_ProjectPlans.json",
+    "selected_model_or_models": [
+      {
+        "trainer": "BraTSFixed3DUNet",
+        "configuration": "fixed_3d_fullres",
+        "plans_identifier": "ProjectPlans"
+      }
+    ]
+  }
+}

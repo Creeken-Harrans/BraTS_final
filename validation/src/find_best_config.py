@@ -179,7 +179,7 @@ def _build_no_summary_error(search_roots: list[str | Path] | None) -> RuntimeErr
         "No summary.json files were found in the requested search roots.",
         "Searched roots:",
         *[f"  - {path}" for path in searched_roots],
-        "Generate results first with `train`, `validate`, `predict`, or `accumulate-cv`.",
+        "Generate results first with `train`, `validate`, or `predict`.",
     ]
 
     legacy_roots = [path for path in _legacy_search_root_candidates() if path.exists()]

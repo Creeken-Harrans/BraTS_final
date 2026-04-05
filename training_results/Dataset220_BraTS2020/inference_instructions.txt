@@ -1,0 +1,18 @@
+***Run inference like this:***
+
+python run.py predict --sample-training-cases 12 --sample-seed 123
+
+***Best configuration summary***
+
+dataset: Dataset220_BraTS2020
+model: BraTSFixed3DUNet
+configuration: fixed_3d_fullres
+plans: ProjectPlans
+folds: 0 1 2 3 4
+metric: foreground_mean.Dice
+value: 0.854982
+summary: /home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/BraTSFixed3DUNet__ProjectPlans__fixed_3d_fullres/crossval_results_folds_0_1_2_3_4/summary.json
+
+***Postprocessing***
+
+metadata: /home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/Dataset220_BraTS2020/postprocessing.json
