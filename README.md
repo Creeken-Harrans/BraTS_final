@@ -15,7 +15,6 @@ BraTS2020 分割项目，当前统一通过根目录的 `run.py` 作为命令行
 - `validation/`：验证与预测代码
 - `evaluation/`：评估与报告代码
 - `training_results/`：训练和验证输出
-- `preprocess/`：预处理配置与元数据
 
 ## CLI
 
@@ -144,22 +143,20 @@ python run.py validate --fold 0 --npz
 
 #### `find-best-config`
 
-扫描 `training_results/` 和 `evaluation/results/` 下的 `summary.json`，按指定指标排序。
+按旧项目主流程执行 best-config 选择：
+
+- 自动查找当前已有的 fold 验证结果
+- 自动合并 shared folds 的 cross-validation 结果
+- 生成 best config 对应的 `inference_information.json`
+- 生成 `inference_instructions.txt`
 
 ```bash
 python run.py find-best-config
-python run.py find-best-config --metric foreground_mean.FN
-python run.py find-best-config --metric mean.(3,).Dice --top-k 10
-python run.py find-best-config --output-file evaluation/results/best_config_ranking.json
 ```
 
 常用参数：
 
-- `--search-root`：指定扫描目录或直接给 `summary.json`
-- `--metric`：点路径形式的指标名，默认 `foreground_mean.Dice`
-- `--top-k`：输出前几名
-- `--lower-is-better`：显式按升序排序
-- `--output-file`：把完整排名写到 JSON
+- `--search-root`：仅在你要手动指定外部结果目录时使用
 
 #### `predict`
 
@@ -167,7 +164,6 @@ python run.py find-best-config --output-file evaluation/results/best_config_rank
 
 ```bash
 python run.py predict --sample-training-cases 12 --sample-seed 123
-python run.py predict --sample-training-cases 12 --sample-seed 123 --fold 0
 python run.py predict --sample-training-cases 12 --sample-seed 123 --val-best --npz
 python run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir evaluation/results/demo_predict --overwrite
 ```
@@ -182,7 +178,6 @@ python run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir 
 
 - `--sample-training-cases`：必填，抽样数量
 - `--sample-seed`：必填，随机种子
-- `--fold`：显式指定使用哪个 fold 的 checkpoint
 - `--val-best`：优先使用 `checkpoint_best.pth`
 - `--output-dir`：自定义输出目录
 - `--overwrite`：允许覆盖已有非空目录

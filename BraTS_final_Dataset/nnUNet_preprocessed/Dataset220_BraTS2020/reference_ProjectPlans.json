@@ -1,6 +1,6 @@
 {
     "dataset_name": "Dataset220_BraTS2020",
-    "plans_name": "nnUNetPlans",
+    "plans_name": "ProjectPlans",
     "original_median_spacing_after_transp": [
         1.0,
         1.0,
@@ -24,7 +24,7 @@
     ],
     "configurations": {
         "2d": {
-            "data_identifier": "nnUNetPlans_2d",
+            "data_identifier": "ProjectPlans_2d",
             "preprocessor_name": "DefaultPreprocessor",
             "batch_size": 105,
             "patch_size": [
@@ -160,7 +160,7 @@
                     },
                     "dropout_op": null,
                     "dropout_op_kwargs": null,
-                    "nonlin": "torch.nn.LeakyReLU",
+                    "nonlin": "torch.nn.modules.activation.LeakyReLU",
                     "nonlin_kwargs": {
                         "inplace": true
                     }
@@ -171,11 +171,10 @@
                     "dropout_op",
                     "nonlin"
                 ]
-            },
-            "batch_dice": true
+            }
         },
         "3d_fullres": {
-            "data_identifier": "nnUNetPlans_3d_fullres",
+            "data_identifier": "ProjectPlans_3d_fullres",
             "preprocessor_name": "DefaultPreprocessor",
             "batch_size": 2,
             "patch_size": [
@@ -326,7 +325,7 @@
                     },
                     "dropout_op": null,
                     "dropout_op_kwargs": null,
-                    "nonlin": "torch.nn.LeakyReLU",
+                    "nonlin": "torch.nn.modules.activation.LeakyReLU",
                     "nonlin_kwargs": {
                         "inplace": true
                     }
@@ -337,48 +336,7 @@
                     "dropout_op",
                     "nonlin"
                 ]
-            },
-            "batch_dice": false
-        }
-    },
-    "experiment_planner_used": "ExperimentPlanner",
-    "label_manager": "LabelManager",
-    "foreground_intensity_properties_per_channel": {
-        "0": {
-            "max": 21113.0,
-            "mean": 644.5308227539062,
-            "median": 356.0,
-            "min": 0.0,
-            "percentile_00_5": 37.0,
-            "percentile_99_5": 8507.0,
-            "std": 1026.2943115234375
-        },
-        "1": {
-            "max": 18011.0,
-            "mean": 793.4114990234375,
-            "median": 415.0,
-            "min": 0.0,
-            "percentile_00_5": 36.0,
-            "percentile_99_5": 8115.0,
-            "std": 1158.5498046875
-        },
-        "2": {
-            "max": 31404.0,
-            "mean": 1070.948974609375,
-            "median": 665.0,
-            "min": 0.0,
-            "percentile_00_5": 96.0,
-            "percentile_99_5": 16391.0,
-            "std": 1993.7572021484375
-        },
-        "3": {
-            "max": 29422.0,
-            "mean": 724.111572265625,
-            "median": 428.0,
-            "min": 0.0,
-            "percentile_00_5": 73.0,
-            "percentile_99_5": 16638.0,
-            "std": 1905.12744140625
+            }
         }
     }
 }

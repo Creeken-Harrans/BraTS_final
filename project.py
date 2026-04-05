@@ -91,6 +91,19 @@ def get_gt_segmentations_dir() -> Path:
     return get_external_preprocessed_dataset_dir() / "gt_segmentations"
 
 
+def get_reference_plans_file() -> Path:
+    internal_file = get_preprocessed_dataset_dir() / "reference_ProjectPlans.json"
+    if internal_file.is_file():
+        return internal_file
+    external_file = get_external_preprocessed_dataset_dir() / "reference_ProjectPlans.json"
+    if external_file.is_file():
+        return external_file
+    raise RuntimeError(
+        "Missing reference ProjectPlans metadata. Expected "
+        f"{internal_file} or {external_file}."
+    )
+
+
 def get_results_root() -> Path:
     cfg = load_project_config()
     return resolve_project_path(cfg["paths"]["results_root"])

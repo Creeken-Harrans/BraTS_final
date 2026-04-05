@@ -134,47 +134,21 @@ def cmd_find_best_config(args: argparse.Namespace) -> int:
 
     result = find_best_config(
         search_roots=args.search_root,
-        metric_path=args.metric,
-        lower_is_better=True if args.lower_is_better else None,
     )
-
-    if args.output_file:
-        output_file = Path(args.output_file).resolve()
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(
-            json.dumps(result, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-
-    ranking = result["ranking"][: args.top_k]
-    direction = "min" if result["lower_is_better"] else "max"
-    print(f"[OK] Best config by {result['metric_path']} ({direction})")
-    print(f"[OK] Candidates scanned: {result['num_candidates']}")
     best = result["best"]
-    print(f"[OK] Best value: {best['metric_value']:.6f}")
-    print(f"[OK] Summary: {best['summary_path']}")
-    if best["training_state_path"]:
-        print(f"[OK] Training state: {best['training_state_path']}")
-    if best["fold"] is not None:
-        print(f"[OK] Fold: {best['fold']}")
-    if best["configuration_name"] is not None:
-        print(f"[OK] Configuration: {best['configuration_name']}")
-    if best["model_name"] is not None:
-        print(f"[OK] Model: {best['model_name']}")
-
-    print("[OK] Top results:")
-    for index, item in enumerate(ranking, start=1):
-        fold_label = item["fold"] if item["fold"] is not None else "-"
-        config_label = item["configuration_name"] or "-"
-        print(
-            f"  {index}. metric={item['metric_value']:.6f} "
-            f"fold={fold_label} config={config_label} path={item['summary_path']}"
-        )
-
-    if result["skipped"]:
-        print(f"[INFO] Skipped {len(result['skipped'])} summary files without usable {result['metric_path']}.")
-    if args.output_file:
-        print(f"[OK] Full ranking written to: {output_file}")
+    print()
+    print("***All results:***")
+    for key, value in result["all_results"].items():
+        print(f"{key}: {value}")
+    best_key = next(iter(result["all_results"]))
+    print(f"\n*Best*: {best_key}: {best['metric_value']}")
+    print()
+    print("***Determining postprocessing for best model/ensemble***")
+    print(f"[OK] Cross-validation summary: {best['summary_path']}")
+    if best.get("auto_prepared_cv_dir"):
+        print(f"[OK] Cross-validation results prepared in: {best['auto_prepared_cv_dir']}")
+    print(f"[OK] Inference info: {result['inference_information_path']}")
+    print(f"[OK] Inference instructions: {result['inference_instructions_path']}")
     return 0
 
 
@@ -184,7 +158,6 @@ def cmd_predict(args: argparse.Namespace) -> int:
     result = predict_training_cases(
         sample_training_cases=args.sample_training_cases,
         sample_seed=args.sample_seed,
-        fold=args.fold,
         use_best_checkpoint=args.val_best,
         output_dir=args.output_dir,
         overwrite=args.overwrite,
@@ -338,26 +311,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     find_best = subparsers.add_parser(
         "find-best-config",
-        help="Scan validation summary.json files and rank them by a chosen metric",
+        help="Aggregate available validation folds and determine the best configuration",
     )
     find_best.add_argument(
         "--search-root",
         nargs="+",
         default=None,
-        help="Directories or summary.json files to scan. Defaults to training_results and evaluation/results.",
+        help="Optional directories or summary.json files to scan instead of the default project workflow.",
     )
-    find_best.add_argument(
-        "--metric",
-        default="foreground_mean.Dice",
-        help="Dot-path into summary.json, for example foreground_mean.Dice or mean.(3,).Dice",
-    )
-    find_best.add_argument("--top-k", type=int, default=5, help="How many ranked entries to print")
-    find_best.add_argument(
-        "--lower-is-better",
-        action="store_true",
-        help="Sort ascending instead of descending. By default FP/FN are treated as lower-is-better automatically.",
-    )
-    find_best.add_argument("--output-file", type=str, default=None, help="Optional JSON file for the full ranking")
     find_best.set_defaults(func=cmd_find_best_config)
 
     predict = subparsers.add_parser(
@@ -366,7 +327,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     predict.add_argument("--sample-training-cases", type=int, required=True, help="Number of training cases to sample")
     predict.add_argument("--sample-seed", type=int, required=True, help="Random seed used for sampling cases")
-    predict.add_argument("--fold", type=int, default=None, help="Fold checkpoint to use. Defaults to the best available fold")
     predict.add_argument("--npz", action="store_true", help="Keep restored probability maps")
     predict.add_argument("--val-best", action="store_true", help="Prefer checkpoint_best.pth over checkpoint_final.pth")
     predict.add_argument("--overwrite", action="store_true", help="Allow writing into an existing non-empty output directory")

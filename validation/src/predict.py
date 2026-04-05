@@ -12,7 +12,7 @@ import torch
 
 from evaluation.src.metrics import evaluate_prediction_folder
 from models import BRATS_3D_PATCH_SIZE, build_brats_inference_model
-from project import get_default_folds, get_evaluation_root, get_gt_segmentations_dir, get_primary_preprocessed_dataset_dir, get_training_cases_dir, resolve_fold_validation_dir
+from project import get_dataset_name, get_default_folds, get_evaluation_root, get_gt_segmentations_dir, get_primary_preprocessed_dataset_dir, get_results_root, get_training_cases_dir, resolve_fold_validation_dir
 from training.src.data.dataset import infer_preprocessed_dataset_class
 from training.src.data.labels import load_brats_label_manager
 from training.src.core.runtime import build_device, resolve_validation_checkpoint
@@ -60,10 +60,25 @@ def _load_fold_score(fold: int) -> float | None:
     return float(value)
 
 
+def _load_recommended_folds() -> tuple[int, ...] | None:
+    inference_information = get_results_root() / get_dataset_name() / "inference_information.json"
+    if not inference_information.is_file():
+        return None
+    try:
+        payload = _load_json(inference_information)
+    except json.JSONDecodeError:
+        return None
+    folds = payload.get("folds")
+    if not isinstance(folds, list) or not all(isinstance(fold, int) for fold in folds):
+        return None
+    return tuple(folds)
+
+
 def _resolve_prediction_fold(use_best_checkpoint: bool) -> tuple[int, Path, str]:
     scored_candidates: list[tuple[float, int, Path]] = []
     fallback_candidates: list[tuple[int, Path]] = []
-    for fold in get_default_folds():
+    candidate_folds = _load_recommended_folds() or tuple(get_default_folds())
+    for fold in candidate_folds:
         checkpoint = resolve_validation_checkpoint(fold, use_best=use_best_checkpoint)
         if checkpoint is None:
             continue
@@ -75,12 +90,12 @@ def _resolve_prediction_fold(use_best_checkpoint: bool) -> tuple[int, Path, str]
     if scored_candidates:
         scored_candidates.sort(key=lambda item: (item[0], -item[1]), reverse=True)
         _, fold, checkpoint = scored_candidates[0]
-        return fold, checkpoint, "best available validation Dice"
+        return fold, checkpoint, "best available validation Dice from find-best-config folds"
 
     if fallback_candidates:
         fallback_candidates.sort(key=lambda item: item[0])
         fold, checkpoint = fallback_candidates[0]
-        return fold, checkpoint, "first fold with an available checkpoint"
+        return fold, checkpoint, "first fold with an available checkpoint from find-best-config folds"
 
     raise RuntimeError("No validation checkpoint is available in any default fold.")
 
@@ -102,7 +117,6 @@ def predict_training_cases(
     *,
     sample_training_cases: int,
     sample_seed: int,
-    fold: int | None = None,
     use_best_checkpoint: bool = False,
     output_dir: str | Path | None = None,
     overwrite: bool = False,
@@ -111,16 +125,8 @@ def predict_training_cases(
     if sample_training_cases <= 0:
         raise RuntimeError("--sample-training-cases must be a positive integer.")
 
-    if fold is None:
-        resolved_fold, checkpoint_path, fold_reason = _resolve_prediction_fold(use_best_checkpoint)
-        fold_was_auto_selected = True
-    else:
-        checkpoint_path = resolve_validation_checkpoint(fold, use_best=use_best_checkpoint)
-        if checkpoint_path is None:
-            raise RuntimeError(f"No checkpoint available for fold {fold}.")
-        resolved_fold = int(fold)
-        fold_reason = "explicit --fold"
-        fold_was_auto_selected = False
+    resolved_fold, checkpoint_path, fold_reason = _resolve_prediction_fold(use_best_checkpoint)
+    fold_was_auto_selected = True
 
     destination = _resolve_output_dir(
         output_dir=output_dir,

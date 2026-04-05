@@ -1,5 +1,0 @@
-2026-04-03 20:17:08 /home/Creeken/Desktop/machine-learning-test/nnUNet_test/nnUNet_raw/Dataset220_BraTS2020/labelsTr/BraTS20_Training_233.nii.gz
-2026-04-03 20:17:08 old shape: (139, 171, 134), new_shape: [139 171 134], old_spacing: [np.float64(1.0), np.float64(1.0), np.float64(1.0)], new_spacing: [1.0, 1.0, 1.0], fn_data: functools.partial(<function resample_data_or_seg_to_shape at 0x7f0449d585e0>, is_seg=False, order=3, order_z=0, force_separate_z=None)
-2026-04-03 20:17:08 (1, 2, 3) 10000
-2026-04-03 20:17:08 (2, 3) 2702
-2026-04-03 20:17:08 (3,) 2642

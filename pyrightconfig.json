@@ -19,7 +19,6 @@
     "evaluation/report",
     "evaluation/results",
     "first_case_visualization/output",
-    "preprocess/logs",
     "training_results"
   ],
   "extraPaths": [
