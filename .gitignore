@@ -9,3 +9,9 @@
 *.npy
 *.pkl
 *.pyc
+__pycache__/
+
+# Generated project outputs
+evaluation/results/
+training_results/
+first_case_visualization/output/

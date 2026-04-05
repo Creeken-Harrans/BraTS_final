@@ -14,7 +14,7 @@ BraTS2020 分割项目。命令行统一入口是根目录的 `run.py`。
 - `training/`: 训练逻辑
 - `validation/`: 验证、best-config、抽样预测
 - `evaluation/`: 指标评估与报告生成
-- `training_results/`: 训练与验证产物
+- `training_results/`: 训练与验证运行产物，不纳入版本控制
 
 ## CLI
 
@@ -247,5 +247,5 @@ python run.py clean-last-results
 ## 其他说明
 
 - 所有命令都支持 `--help`
-- 训练、验证、预测相关产物主要写入 `training_results/` 和 `evaluation/results/`
+- 训练、验证、预测相关产物主要写入 `training_results/` 和 `evaluation/results/`，这些目录默认不纳入版本控制
 - 原始 BraTS 数据转换脚本仍保留在 `data_preparation/scripts/prepare_brats2020_for_project.py`，供以后重建 `nnUNet_raw` 时使用；它不属于当前 CLI 子命令集合

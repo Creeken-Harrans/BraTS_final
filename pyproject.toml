@@ -41,4 +41,4 @@ py-modules = ["cli", "project", "run"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["evaluation*", "models*", "training*", "validation*"]
+include = ["evaluation*", "training*", "validation*"]

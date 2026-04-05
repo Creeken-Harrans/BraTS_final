@@ -14,7 +14,6 @@ import SimpleITK as sitk
 import torch
 from batchgenerators.dataloading.single_threaded_augmenter import SingleThreadedAugmenter
 
-from models import BRATS_3D_PATCH_SIZE, build_brats_training_model
 from project import (
     get_gt_segmentations_dir,
     get_primary_preprocessed_dataset_dir,
@@ -34,6 +33,7 @@ from validation.src.visualization import write_validation_overlay
 from ..data.data_loader import PreprocessedBatchLoader
 from ..data.dataset import infer_preprocessed_dataset_class
 from ..data.labels import load_brats_label_manager
+from ..models import BRATS_3D_PATCH_SIZE, build_brats_training_model
 from ..data.transforms import (
     build_training_transforms,
     build_validation_transforms,

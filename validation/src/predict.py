@@ -11,8 +11,8 @@ import numpy as np
 import torch
 
 from evaluation.src.metrics import evaluate_prediction_folder
-from models import BRATS_3D_PATCH_SIZE, build_brats_inference_model
 from project import get_dataset_name, get_default_folds, get_evaluation_root, get_gt_segmentations_dir, get_primary_preprocessed_dataset_dir, get_results_root, get_training_cases_dir, resolve_fold_validation_dir
+from training.src.models import BRATS_3D_PATCH_SIZE, build_brats_inference_model
 from training.src.data.dataset import infer_preprocessed_dataset_class
 from training.src.data.labels import load_brats_label_manager
 from training.src.core.runtime import build_device, resolve_validation_checkpoint

@@ -3,8 +3,8 @@ from .brats_unet_3d import (
     BRATS_INPUT_CHANNELS,
     BRATS_OUTPUT_CHANNELS,
     BratsUNet3D,
-    build_brats_training_model,
     build_brats_inference_model,
+    build_brats_training_model,
 )
 
 __all__ = [
@@ -12,6 +12,6 @@ __all__ = [
     "BRATS_INPUT_CHANNELS",
     "BRATS_OUTPUT_CHANNELS",
     "BratsUNet3D",
-    "build_brats_training_model",
     "build_brats_inference_model",
+    "build_brats_training_model",
 ]
