@@ -226,7 +226,7 @@ python run.py evaluate
 
 ### `clean-last-results`
 
-删除最近一次按默认规则生成的 `predict` 和 `evaluate` 结果。
+删除最近一次按默认规则生成的 `predict` / `evaluate` 结果，以及 `find-best-config` 生成的自动产物。
 
 ```bash
 python run.py clean-last-results
@@ -237,12 +237,14 @@ python run.py clean-last-results
 - `evaluation/results/` 下最近一次 `predict` 产出的目录
 - 对应自动生成的 `evaluation/results/<pred_dir_name>_summary.json`
 - 对应自动生成的报告目录
+- `training_results/` 下的 `inference_information.json`、`inference_instructions.txt`、`postprocessing.json`
+- 默认 folds 对应的 cross-validation 汇总目录
 
 说明：
 
-- 只针对最近一次自动管理的预测/评估结果
+- 只针对自动管理的 `find-best-config` / `predict` / `evaluate` 结果
 - 不会删除 `training_results/` 下的训练或 validation 产物
-- 主要用于开始新一轮 `predict` / `evaluate` 前清空上一轮结果
+- 主要用于开始新一轮推理评估前清空上一轮自动产物
 
 ## 其他说明
 

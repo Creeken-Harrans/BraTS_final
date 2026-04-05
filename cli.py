@@ -19,6 +19,7 @@ from project import (
     get_primary_preprocessed_dataset_dir,
     get_primary_raw_dataset_dir,
     get_project_root,
+    get_results_root,
     resolve_fold_validation_dir,
 )
 
@@ -58,6 +59,19 @@ def _remove_path(path: Path) -> bool:
     else:
         path.unlink()
     return True
+
+
+def _resolve_find_best_artifact_paths() -> tuple[Path, Path, Path, Path]:
+    folds_label = "_".join(str(fold) for fold in get_default_folds())
+    model_identifier = f"{get_model_name()}__ProjectPlans__{get_configuration_name()}"
+    inference_dir = get_results_root() / get_dataset_name()
+    crossval_dir = get_results_root() / model_identifier / f"crossval_results_folds_{folds_label}"
+    return (
+        crossval_dir,
+        inference_dir / "inference_information.json",
+        inference_dir / "inference_instructions.txt",
+        inference_dir / "postprocessing.json",
+    )
 
 
 def cmd_doctor(_: argparse.Namespace) -> int:
@@ -271,25 +285,33 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
 
 
 def cmd_clean_last_results(_: argparse.Namespace) -> int:
+    removed: list[Path] = []
+    cleaned_pred_name: str | None = None
+
     try:
         pred_dir = _resolve_latest_prediction_dir()
     except RuntimeError:
-        print("[OK] No previous auto-managed predict/evaluate results were found.")
-        return 0
+        pred_dir = None
 
-    summary_file = get_evaluation_root() / f"{pred_dir.name}_summary.json"
-    report_dir = _resolve_report_output_dir(None, pred_dir, None)
+    if pred_dir is not None:
+        cleaned_pred_name = pred_dir.name
+        summary_file = get_evaluation_root() / f"{pred_dir.name}_summary.json"
+        report_dir = _resolve_report_output_dir(None, pred_dir, None)
+        for path in (pred_dir, summary_file, report_dir):
+            if _remove_path(path):
+                removed.append(path)
 
-    removed: list[Path] = []
-    for path in (pred_dir, summary_file, report_dir):
+    for path in _resolve_find_best_artifact_paths():
         if _remove_path(path):
             removed.append(path)
 
     if not removed:
-        print("[OK] No previous auto-managed predict/evaluate results were found.")
+        print("[OK] No previous auto-managed predict/evaluate/find-best results were found.")
         return 0
 
-    print(f"[OK] Cleaned latest predict/evaluate results for: {pred_dir.name}")
+    if cleaned_pred_name is not None:
+        print(f"[OK] Cleaned latest predict/evaluate results for: {cleaned_pred_name}")
+    print("[OK] Cleaned auto-managed result artifacts.")
     for path in removed:
         print(f"[OK] Removed: {path}")
     return 0

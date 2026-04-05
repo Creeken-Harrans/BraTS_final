@@ -136,6 +136,7 @@ def restore_prediction_to_original_space(
 
 
 def write_segmentation_nifti(segmentation: np.ndarray, properties: dict, output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     image = sitk.GetImageFromArray(segmentation.astype(np.uint16, copy=False))
     sitk_stuff = properties["sitk_stuff"]
     image.SetSpacing(tuple(float(v) for v in sitk_stuff["spacing"]))

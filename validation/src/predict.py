@@ -179,6 +179,7 @@ def predict_training_cases(
             label_manager,
         )
         output_stem = destination / case_id
+        output_stem.parent.mkdir(parents=True, exist_ok=True)
         if export_probabilities:
             np.savez_compressed(str(output_stem) + ".npz", probabilities=restored_probabilities)
             with Path(str(output_stem) + ".pkl").open("wb") as handle:
