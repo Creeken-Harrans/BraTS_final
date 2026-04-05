@@ -1,0 +1,20 @@
+BraTS Segmentation Labels Summary
+================================================================================
+BraTS segmentation is a 3D label volume aligned with the MRI volumes.
+Total voxels in the volume: 8928000
+Total non-background tumor voxels: 211979
+
+Labels
+--------------------------------------------------------------------------------
+label 0: Background
+  voxel count: 8716021
+  fraction of full volume: 0.976257
+label 1: Necrotic / non-enhancing tumor core (NCR/NET)
+  voxel count: 15443
+  fraction of full volume: 0.001730
+label 2: Peritumoral edema (ED)
+  voxel count: 168794
+  fraction of full volume: 0.018906
+label 4: Enhancing tumor (ET)
+  voxel count: 27742
+  fraction of full volume: 0.003107

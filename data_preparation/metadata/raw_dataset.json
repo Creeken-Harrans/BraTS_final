@@ -1,0 +1,31 @@
+{
+  "channel_names": {
+    "0": "T1",
+    "1": "T1ce",
+    "2": "T2",
+    "3": "Flair"
+  },
+  "labels": {
+    "background": 0,
+    "whole_tumor": [
+      1,
+      2,
+      3
+    ],
+    "tumor_core": [
+      2,
+      3
+    ],
+    "enhancing_tumor": [
+      3
+    ]
+  },
+  "numTraining": 368,
+  "file_ending": ".nii.gz",
+  "regions_class_order": [
+    1,
+    2,
+    3
+  ],
+  "description": "BraTS2020 converted for nnUNet v2 region-based training"
+}

@@ -1,0 +1,24 @@
+{
+  "dataset": {
+    "id": 220,
+    "name": "Dataset220_BraTS2020",
+    "default_folds": [0, 1, 2, 3, 4]
+  },
+  "paths": {
+    "dataset_root": "BraTS_final_Dataset",
+    "archive_root": "BraTS_final_Dataset/archive/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData",
+    "raw_root": "BraTS_final_Dataset/nnUNet_raw",
+    "preprocessed_root": "BraTS_final_Dataset/nnUNet_preprocessed",
+    "results_root": "training_results"
+  },
+  "training": {
+    "model_name": "BraTSFixed3DUNet",
+    "configuration_name": "fixed_3d_fullres",
+    "epochs": 150,
+    "checkpoint_priority": [
+      "checkpoint_final.pth",
+      "checkpoint_latest.pth",
+      "checkpoint_best.pth"
+    ]
+  }
+}

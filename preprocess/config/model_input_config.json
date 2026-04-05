@@ -1,0 +1,32 @@
+{
+  "model_name": "BraTSFixed3DUNet",
+  "dataset_name": "Dataset220_BraTS2020",
+  "configuration_name": "fixed_3d_fullres",
+  "input_channels": 4,
+  "num_segmentation_heads": 3,
+  "patch_size": [128, 128, 128],
+  "target_spacing": [1.0, 1.0, 1.0],
+  "architecture": {
+    "family": "plain_conv_unet_3d",
+    "implementation": "models.brats_unet_3d.BratsUNet3D",
+    "n_stages": 6,
+    "features_per_stage": [32, 64, 128, 256, 320, 320],
+    "kernel_sizes": [[3, 3, 3], [3, 3, 3], [3, 3, 3], [3, 3, 3], [3, 3, 3], [3, 3, 3]],
+    "strides": [[1, 1, 1], [2, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]],
+    "n_conv_per_stage": [2, 2, 2, 2, 2, 2],
+    "n_conv_per_stage_decoder": [2, 2, 2, 2, 2],
+    "conv_bias": true,
+    "norm_op": "torch.nn.modules.instancenorm.InstanceNorm3d",
+    "norm_op_kwargs": {
+      "eps": 1e-05,
+      "affine": true
+    },
+    "dropout_op": null,
+    "dropout_op_kwargs": null,
+    "nonlin": "torch.nn.LeakyReLU",
+    "nonlin_kwargs": {
+      "inplace": true
+    }
+  },
+  "notes": "Static model input and architecture configuration for the fixed BraTS_final 3D segmentation model."
+}

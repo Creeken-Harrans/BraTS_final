@@ -1,0 +1,44 @@
+[project]
+name = "brats-final"
+version = "0.1.0"
+requires-python = ">=3.10"
+description = "Standalone BraTS_final segmentation project."
+readme = "README.md"
+dependencies = [
+    "torch>=2.7,<2.8",
+    "acvl-utils>=0.2.3,<0.3",
+    "dynamic-network-architectures>=0.4.1,<0.5",
+    "tqdm",
+    "scipy",
+    "batchgenerators>=0.25.1",
+    "numpy>=1.24",
+    "scikit-learn",
+    "scikit-image>=0.19.3",
+    "SimpleITK>=2.2.1",
+    "pandas",
+    "graphviz",
+    "tifffile",
+    "requests",
+    "nibabel",
+    "matplotlib",
+    "seaborn",
+    "imagecodecs",
+    "yacs",
+    "batchgeneratorsv2>=0.3.0",
+    "einops",
+    "blosc2>=3.0.0b1"
+]
+
+[project.scripts]
+brats-final = "cli:main"
+
+[build-system]
+requires = ["setuptools>=67.8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["cli", "project", "run"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["evaluation*", "models*", "training*", "validation*"]

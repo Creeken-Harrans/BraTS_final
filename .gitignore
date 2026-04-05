@@ -1,0 +1,11 @@
+*.nii
+*.nii.gz
+
+# Model checkpoints and arrays
+*.pth
+*.pt
+*.ckpt
+*.npz
+*.npy
+*.pkl
+*.pyc

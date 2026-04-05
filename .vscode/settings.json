@@ -1,0 +1,46 @@
+{
+  "python.defaultInterpreterPath": "/home/Creeken/miniconda3/envs/pytorch/bin/python",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/training/src",
+    "${workspaceFolder}/evaluation/src",
+    "${workspaceFolder}/validation/src"
+  ],
+  "python.analysis.exclude": [
+    "**/__pycache__",
+    "${workspaceFolder}/BraTS_final_Dataset/archive",
+    "${workspaceFolder}/evaluation/report",
+    "${workspaceFolder}/evaluation/results",
+    "${workspaceFolder}/first_case_visualization/output",
+    "${workspaceFolder}/preprocess/logs",
+    "${workspaceFolder}/training_results"
+  ],
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none",
+    "reportMissingModuleSource": "none",
+    "reportWildcardImportFromLibrary": "none",
+    "reportOptionalMemberAccess": "none",
+    "reportOptionalSubscript": "none",
+    "reportOptionalIterable": "none",
+    "reportOptionalCall": "none",
+    "reportOptionalOperand": "none",
+    "reportOptionalContextManager": "none",
+    "reportArgumentType": "none",
+    "reportAssignmentType": "none",
+    "reportAttributeAccessIssue": "none",
+    "reportCallIssue": "none",
+    "reportFunctionMemberAccess": "none",
+    "reportGeneralTypeIssues": "none",
+    "reportIncompatibleMethodOverride": "none",
+    "reportInvalidTypeForm": "none",
+    "reportOperatorIssue": "none",
+    "reportPossiblyUnboundVariable": "none",
+    "reportPrivateImportUsage": "none",
+    "reportReturnType": "none",
+    "reportUndefinedVariable": "none",
+    "reportUnsupportedDunderAll": "none"
+  }
+}

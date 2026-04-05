@@ -1,0 +1,72 @@
+{
+  "fold": 0,
+  "status": "running",
+  "timestamp": "2026-04-05T19:55:10.999726",
+  "device": "cuda",
+  "output_dir": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/fold0",
+  "logs_dir": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/fold0/logs",
+  "log_file": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/fold0/logs/training_log_2026_4_5_19_42_13.txt",
+  "training_state_file": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/fold0/training_state.json",
+  "history": {
+    "mean_fg_dice": [
+      0.7123979926109314,
+      0.7885812719662985,
+      0.7781112591425577
+    ],
+    "ema_fg_dice": [
+      0.7123979926109314,
+      0.7200163205464681,
+      0.7258258144060771
+    ],
+    "dice_per_class_or_region": [
+      [
+        0.8019921779632568,
+        0.6486088037490845,
+        0.6865929961204529
+      ],
+      [
+        0.8555138111114502,
+        0.7171238660812378,
+        0.7931061387062073
+      ],
+      [
+        0.8649740815162659,
+        0.6980066895484924,
+        0.771353006362915
+      ]
+    ],
+    "train_losses": [
+      -0.38611218333244324,
+      -0.6048362851142883,
+      -0.6410459876060486
+    ],
+    "val_losses": [
+      -0.6037966012954712,
+      -0.6914673447608948,
+      -0.6875740885734558
+    ],
+    "lrs": [
+      0.01,
+      0.009939979950939289,
+      0.009879919606128272
+    ],
+    "epoch_start_timestamps": [
+      1775389334.2622435,
+      1775389601.9041681,
+      1775389865.5267415
+    ],
+    "epoch_end_timestamps": [
+      1775389601.624014,
+      1775389865.176265,
+      1775390110.634225
+    ]
+  },
+  "logged_epochs": 3,
+  "current_epoch": 3,
+  "total_epochs": 150,
+  "resume_checkpoint_path": null,
+  "latest_checkpoint_path": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/fold0/checkpoint_latest.pth",
+  "best_checkpoint_path": "/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results/fold0/checkpoint_best.pth",
+  "final_checkpoint_path": null,
+  "best_ema": 0.7258258144060771
+}
