@@ -3,7 +3,6 @@
     "run.py",
     "cli.py",
     "project.py",
-    "data_preparation/scripts",
     "evaluation/src",
     "first_case_visualization",
     "models",

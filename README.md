@@ -10,19 +10,14 @@ Use the PyTorch Python from the local Anaconda/Miniconda environment:
 /home/Creeken/miniconda3/envs/pytorch/bin/python
 ```
 
-Recommended shell shortcut:
-
-```bash
-export PYTHON=/home/Creeken/miniconda3/envs/pytorch/bin/python
-```
-
 All commands below assume you run them from:
 
 ```bash
 /home/Creeken/Desktop/machine-learning-test/BraTS_final
 ```
 
-Examples below use `$PYTHON`. If you do not set it, replace `$PYTHON` with the full path above.
+If the `pytorch` conda environment is already activated, use plain `python`.
+If not, replace `python` below with `/home/Creeken/miniconda3/envs/pytorch/bin/python`.
 
 ## What This Repo Covers
 
@@ -49,8 +44,6 @@ Default project config:
 - Evaluation outputs: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/evaluation/results`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/evaluation/results)
 
 Important: the preprocessed data is now flattened directly under `BraTS_final_Dataset/nnUNet_preprocessed/`. It is no longer expected under `BraTS_final_Dataset/nnUNet_preprocessed/Dataset220_BraTS2020/`.
-
-The code in [project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/project.py) still accepts the legacy nested layout, but the current project data uses the flattened layout.
 
 ## Required Inputs
 
@@ -88,7 +81,7 @@ Main commands:
 Run this first to verify the project sees the correct paths:
 
 ```bash
-$PYTHON run.py doctor
+python run.py doctor
 ```
 
 It prints:
@@ -106,24 +99,24 @@ It prints:
 Full workflow:
 
 ```bash
-$PYTHON run.py train-all --npz
-$PYTHON run.py find-best-config
-$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123
-$PYTHON run.py evaluate --pred-dir evaluation/results/predict_training_sample_n12_seed123_fold0
+python run.py train-all --npz
+python run.py find-best-config
+python run.py predict --sample-training-cases 12 --sample-seed 123
+python run.py evaluate --pred-dir evaluation/results/predict_training_sample_n12_seed123_fold0
 ```
 
 Single fold workflow:
 
 ```bash
-$PYTHON run.py train --fold 0
-$PYTHON run.py validate --fold 0
-$PYTHON run.py evaluate --fold 0
+python run.py train --fold 0
+python run.py validate --fold 0
+python run.py evaluate --fold 0
 ```
 
 Clean the latest auto-managed prediction/evaluation artifacts:
 
 ```bash
-$PYTHON run.py clean-last-results
+python run.py clean-last-results
 ```
 
 ## Commands
@@ -131,13 +124,13 @@ $PYTHON run.py clean-last-results
 Show command help:
 
 ```bash
-$PYTHON run.py --help
+python run.py --help
 ```
 
 ### `doctor`
 
 ```bash
-$PYTHON run.py doctor
+python run.py doctor
 ```
 
 Use this to confirm the resolved project paths before starting a long run.
@@ -147,11 +140,11 @@ Use this to confirm the resolved project paths before starting a long run.
 Train one fold. If a checkpoint exists, the trainer resumes automatically unless you force a restart.
 
 ```bash
-$PYTHON run.py train --fold 0
-$PYTHON run.py train --fold 0 --restart-training
-$PYTHON run.py train --fold 0 --validation-only
-$PYTHON run.py train --fold 0 --pretrained-weights /path/to/checkpoint.pth
-$PYTHON run.py train --fold 0 --val-best --npz
+python run.py train --fold 0
+python run.py train --fold 0 --restart-training
+python run.py train --fold 0 --validation-only
+python run.py train --fold 0 --pretrained-weights /path/to/checkpoint.pth
+python run.py train --fold 0 --val-best --npz
 ```
 
 Key args:
@@ -171,10 +164,10 @@ Outputs go to `training_results/fold<fold>/`.
 Run the default folds sequentially.
 
 ```bash
-$PYTHON run.py train-all
-$PYTHON run.py train-all --restart-training
-$PYTHON run.py train-all --validation-only --val-best
-$PYTHON run.py train-all --npz
+python run.py train-all
+python run.py train-all --restart-training
+python run.py train-all --validation-only --val-best
+python run.py train-all --npz
 ```
 
 ### `validate`
@@ -182,9 +175,9 @@ $PYTHON run.py train-all --npz
 Run validation for one fold using an existing checkpoint.
 
 ```bash
-$PYTHON run.py validate --fold 0
-$PYTHON run.py validate --fold 0 --val-best
-$PYTHON run.py validate --fold 0 --npz
+python run.py validate --fold 0
+python run.py validate --fold 0 --val-best
+python run.py validate --fold 0 --npz
 ```
 
 Outputs:
@@ -198,9 +191,9 @@ Outputs:
 Aggregate available validation results and write inference helper files.
 
 ```bash
-$PYTHON run.py find-best-config
-$PYTHON run.py find-best-config --search-root training_results
-$PYTHON run.py find-best-config --search-root /abs/path/to/summary_parent
+python run.py find-best-config
+python run.py find-best-config --search-root training_results
+python run.py find-best-config --search-root /abs/path/to/summary_parent
 ```
 
 This writes:
@@ -214,9 +207,9 @@ This writes:
 Sample training cases, run prediction, then evaluate automatically.
 
 ```bash
-$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123
-$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123 --val-best --npz
-$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir evaluation/results/demo_predict --overwrite
+python run.py predict --sample-training-cases 12 --sample-seed 123
+python run.py predict --sample-training-cases 12 --sample-seed 123 --val-best --npz
+python run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir evaluation/results/demo_predict --overwrite
 ```
 
 Notes:
@@ -240,9 +233,9 @@ Key args:
 Evaluate a validation directory or prediction directory and generate a report.
 
 ```bash
-$PYTHON run.py evaluate
-$PYTHON run.py evaluate --fold 0
-$PYTHON run.py evaluate --pred-dir evaluation/results/demo_predict
+python run.py evaluate
+python run.py evaluate --fold 0
+python run.py evaluate --pred-dir evaluation/results/demo_predict
 ```
 
 Default behavior with no `--fold` and no `--pred-dir`:
@@ -269,7 +262,7 @@ Key args:
 Remove the latest auto-managed prediction/evaluation outputs.
 
 ```bash
-$PYTHON run.py clean-last-results
+python run.py clean-last-results
 ```
 
 This does not remove fold checkpoints or the main validation outputs.
@@ -281,8 +274,8 @@ This does not remove fold checkpoints or the main validation outputs.
 Quick visualization of the first BraTS case found in the archive.
 
 ```bash
-$PYTHON first_case_visualization/visualize_first_case.py
-$PYTHON first_case_visualization/visualize_first_case.py \
+python first_case_visualization/visualize_first_case.py
+python first_case_visualization/visualize_first_case.py \
   --data-root BraTS_final_Dataset/archive/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData \
   --output-dir first_case_visualization/output
 ```
@@ -291,28 +284,41 @@ Script:
 
 - [visualize_first_case.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/first_case_visualization/visualize_first_case.py)
 
-### Data Preparation
+### Preprocess
 
-Convert the original BraTS2020 training set into the project raw dataset layout.
+Convert the original BraTS2020 training set from `archive/` into:
+
+- `BraTS_final_Dataset/nnUNet_raw/Dataset220_BraTS2020`
+- `BraTS_final_Dataset/nnUNet_preprocessed/`
 
 ```bash
-$PYTHON data_preparation/scripts/prepare_brats2020_for_project.py
-$PYTHON data_preparation/scripts/prepare_brats2020_for_project.py \
+python preprocess/prepare_brats2020_for_project.py
+python preprocess/prepare_brats2020_for_project.py \
   --src-root BraTS_final_Dataset/archive/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData \
   --project-raw BraTS_final_Dataset/nnUNet_raw
 ```
 
-Force rebuild:
+The default behavior is:
+
+- Reuse a complete existing `nnUNet_raw`
+- Automatically rebuild an incomplete `nnUNet_raw`
+- Reuse a complete existing `nnUNet_preprocessed`
+
+Force rebuild raw and preprocessed:
 
 ```bash
-$PYTHON data_preparation/scripts/prepare_brats2020_for_project.py --force
+python preprocess/prepare_brats2020_for_project.py --force
+```
+
+Only force rebuild preprocessed:
+
+```bash
+python preprocess/prepare_brats2020_for_project.py --force-preprocessing
 ```
 
 Related files:
 
-- [prepare_brats2020_for_project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/data_preparation/scripts/prepare_brats2020_for_project.py)
-- [data_contract.md](/home/Creeken/Desktop/machine-learning-test/BraTS_final/data_preparation/docs/data_contract.md)
-- [raw_dataset.json](/home/Creeken/Desktop/machine-learning-test/BraTS_final/data_preparation/metadata/raw_dataset.json)
+- [prepare_brats2020_for_project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/preprocess/prepare_brats2020_for_project.py)
 
 ## Code Layout
 

@@ -15,12 +15,8 @@ from project import (
     get_fold_root,
     get_model_name,
     get_gt_segmentations_dir,
-    get_preprocessed_dataset_dir,
     get_primary_preprocessed_dataset_dir,
-    get_project_root,
-    get_results_root,
     get_training_cases_dir,
-    resolve_fold_artifacts_dir,
 )
 from .config import BratsTrainingConfig, get_default_training_config
 
@@ -149,6 +145,9 @@ def ensure_preprocessed_training_inputs() -> tuple[Path, Path]:
     training_cases_dir = get_training_cases_dir()
     if not training_cases_dir.is_dir():
         raise RuntimeError(f"Missing required preprocessed training cases directory: {training_cases_dir}")
+    gt_segmentations_dir = get_gt_segmentations_dir()
+    if not gt_segmentations_dir.is_dir():
+        raise RuntimeError(f"Missing required ground-truth directory: {gt_segmentations_dir}")
     return dataset_json, splits_json
 
 

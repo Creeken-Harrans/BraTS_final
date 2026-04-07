@@ -27,5 +27,5 @@
     2,
     3
   ],
-  "description": "BraTS2020 converted for nnUNet v2 region-based training"
+  "description": "BraTS2020 converted for the standalone BraTS project region-based training"
 }

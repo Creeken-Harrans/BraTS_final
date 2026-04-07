@@ -1,4 +1,29 @@
 {
+  "explorer.excludeGitIgnore": false,
+  "files.exclude": {
+    "**/*.nii": false,
+    "**/*.nii.gz": false,
+    "**/*.npz": false,
+    "**/*.npy": false,
+    "**/*.pkl": false,
+    "**/*.b2nd": false,
+    "**/BraTS_final_Dataset/nnUNet_raw": false,
+    "**/BraTS_final_Dataset/nnUNet_raw/**": false,
+    "**/BraTS_final_Dataset/nnUNet_preprocessed": false,
+    "**/BraTS_final_Dataset/nnUNet_preprocessed/**": false
+  },
+  "search.exclude": {
+    "**/*.nii": false,
+    "**/*.nii.gz": false,
+    "**/*.npz": false,
+    "**/*.npy": false,
+    "**/*.pkl": false,
+    "**/*.b2nd": false,
+    "**/BraTS_final_Dataset/nnUNet_raw": false,
+    "**/BraTS_final_Dataset/nnUNet_raw/**": false,
+    "**/BraTS_final_Dataset/nnUNet_preprocessed": false,
+    "**/BraTS_final_Dataset/nnUNet_preprocessed/**": false
+  },
   "python.defaultInterpreterPath": "/home/Creeken/miniconda3/envs/pytorch/bin/python",
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.diagnosticMode": "workspace",
