@@ -1,86 +1,78 @@
 # BraTS_final
 
-BraTS2020 分割项目。唯一入口文档是这个根 `README.md`，子目录不再维护各自 README。
+BraTS2020 segmentation project. This file is the only maintained top-level usage document.
 
-## 项目边界
+## Runtime
 
-这个仓库当前包含 3 条主线：
-
-- 数据准备：把原始 BraTS2020 训练集转成项目使用的 `nnUNet_raw/Dataset220_BraTS2020`
-- 训练与验证：训练 3D UNet，产出 fold 级 checkpoint 和 validation 结果
-- 推理与评估：基于已有 checkpoint 抽样预测、评估、生成报告
-
-默认配置：
-
-- dataset: `Dataset220_BraTS2020`
-- model: `BraTSFixed3DUNet`
-- configuration: `fixed_3d_fullres`
-- default folds: `0 1 2 3 4`
-
-## 目录结构
-
-- `run.py`: 根命令入口
-- `cli.py`: CLI 定义与命令分发
-- `project.py`: 项目路径、数据集、结果目录等统一解析
-- `data_preparation/`: 原始数据转换脚本与数据契约
-- `training/src/`: 训练、数据、模型、优化与监控代码
-- `validation/src/`: validation、best-config、抽样预测、可视化
-- `evaluation/src/`: 指标评估与报告生成
-- `training_results/`: 训练与验证运行产物，不纳入版本控制
-- `evaluation/results/`: 推理评估运行产物，不纳入版本控制
-- `first_case_visualization/`: 独立的首病例可视化脚本
-
-## 先决条件
-
-至少要满足这几件事：
-
-- Python 环境安装完 [pyproject.toml](/home/Creeken/Desktop/machine-learning-test/BraTS_final/pyproject.toml) 里的依赖
-- 预处理数据和 GT 路径能被 [project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/project.py) 正确解析
-- 如果要训练或验证，`BraTS_final_Dataset/nnUNet_preprocessed/Dataset220_BraTS2020/` 或外部回退目录下要有 `dataset.json`、`splits_final.json`、训练 case 和 `gt_segmentations`
-- 如果要生成报告，raw dataset 目录下要有 `imagesTr/` 与 `labelsTr/`
-
-建议先跑：
+Use the PyTorch Python from the local Anaconda/Miniconda environment:
 
 ```bash
-python run.py doctor
+/home/Creeken/miniconda3/envs/pytorch/bin/python
 ```
 
-它会打印项目根目录、数据集、模型、配置、预处理目录、训练样本目录和 GT 目录，先确认路径是不是你想要的。
-
-## 常用流程
-
-完整主线通常是：
+Recommended shell shortcut:
 
 ```bash
-python run.py train-all --npz
-python run.py find-best-config
-python run.py predict --sample-training-cases 12 --sample-seed 123
-python run.py evaluate --pred-dir evaluation/results/predict_training_sample_n12_seed123_fold0
+export PYTHON=/home/Creeken/miniconda3/envs/pytorch/bin/python
 ```
 
-如果只跑一个 fold：
+All commands below assume you run them from:
 
 ```bash
-python run.py train --fold 0
-python run.py validate --fold 0
-python run.py evaluate --fold 0
+/home/Creeken/Desktop/machine-learning-test/BraTS_final
 ```
 
-开始一轮新的自动推理评估前，可以先清理自动产物：
+Examples below use `$PYTHON`. If you do not set it, replace `$PYTHON` with the full path above.
 
-```bash
-python run.py clean-last-results
-```
+## What This Repo Covers
 
-## CLI
+- Data preparation: convert BraTS2020 training data into `nnUNet_raw/Dataset220_BraTS2020`
+- Training and validation: train the project 3D UNet and write fold artifacts
+- Prediction and evaluation: sample training cases, run inference, evaluate, generate reports
 
-总帮助：
+Default project config:
 
-```bash
-python run.py --help
-```
+- Dataset: `Dataset220_BraTS2020`
+- Model: `BraTSFixed3DUNet`
+- Configuration: `fixed_3d_fullres`
+- Folds: `0 1 2 3 4`
 
-当前命令：
+## Key Paths
+
+- Project root: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final`](/home/Creeken/Desktop/machine-learning-test/BraTS_final)
+- Raw dataset root: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_raw`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_raw)
+- Active raw dataset: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_raw/Dataset220_BraTS2020`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_raw/Dataset220_BraTS2020)
+- Active preprocessed root: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed)
+- Training cases: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed/ProjectPlans_3d_fullres`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed/ProjectPlans_3d_fullres)
+- Ground truth: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed/gt_segmentations`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed/gt_segmentations)
+- Training outputs: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/training_results)
+- Evaluation outputs: [`/home/Creeken/Desktop/machine-learning-test/BraTS_final/evaluation/results`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/evaluation/results)
+
+Important: the preprocessed data is now flattened directly under `BraTS_final_Dataset/nnUNet_preprocessed/`. It is no longer expected under `BraTS_final_Dataset/nnUNet_preprocessed/Dataset220_BraTS2020/`.
+
+The code in [project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/project.py) still accepts the legacy nested layout, but the current project data uses the flattened layout.
+
+## Required Inputs
+
+Before training or validation, these must exist under [`BraTS_final_Dataset/nnUNet_preprocessed`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_preprocessed):
+
+- `dataset.json`
+- `splits_final.json`
+- `ProjectPlans_3d_fullres/`
+- `gt_segmentations/`
+
+Before report generation, the raw dataset must exist under [`BraTS_final_Dataset/nnUNet_raw/Dataset220_BraTS2020`](/home/Creeken/Desktop/machine-learning-test/BraTS_final/BraTS_final_Dataset/nnUNet_raw/Dataset220_BraTS2020) with at least:
+
+- `imagesTr/`
+- `labelsTr/`
+
+## Entry Points
+
+- [run.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/run.py): main CLI entry
+- [cli.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/cli.py): command definitions
+- [project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/project.py): dataset and path resolution
+
+Main commands:
 
 - `doctor`
 - `train`
@@ -91,242 +83,249 @@ python run.py --help
 - `evaluate`
 - `clean-last-results`
 
-### `doctor`
+## First Check
 
-查看当前项目配置和关键路径。
+Run this first to verify the project sees the correct paths:
 
 ```bash
-python run.py doctor
+$PYTHON run.py doctor
 ```
 
-会打印：
+It prints:
 
-- 项目根目录
-- 数据集名
-- 模型名
-- 配置名
-- 预处理目录
-- 实际训练样本目录
-- 实际 GT 标注目录
+- Project root
+- Dataset name
+- Model name
+- Configuration
+- Active preprocessed directory
+- Training case directory
+- GT directory
+
+## Common Workflow
+
+Full workflow:
+
+```bash
+$PYTHON run.py train-all --npz
+$PYTHON run.py find-best-config
+$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123
+$PYTHON run.py evaluate --pred-dir evaluation/results/predict_training_sample_n12_seed123_fold0
+```
+
+Single fold workflow:
+
+```bash
+$PYTHON run.py train --fold 0
+$PYTHON run.py validate --fold 0
+$PYTHON run.py evaluate --fold 0
+```
+
+Clean the latest auto-managed prediction/evaluation artifacts:
+
+```bash
+$PYTHON run.py clean-last-results
+```
+
+## Commands
+
+Show command help:
+
+```bash
+$PYTHON run.py --help
+```
+
+### `doctor`
+
+```bash
+$PYTHON run.py doctor
+```
+
+Use this to confirm the resolved project paths before starting a long run.
 
 ### `train`
 
-训练单个 fold。若已有 checkpoint，会自动恢复；若该 fold 已完成，则默认跳过。
+Train one fold. If a checkpoint exists, the trainer resumes automatically unless you force a restart.
 
 ```bash
-python run.py train --fold 0
-python run.py train --fold 0 --restart-training
-python run.py train --fold 0 --validation-only
-python run.py train --fold 0 --pretrained-weights /path/to/checkpoint.pth
-python run.py train --fold 0 --val-best --npz
+$PYTHON run.py train --fold 0
+$PYTHON run.py train --fold 0 --restart-training
+$PYTHON run.py train --fold 0 --validation-only
+$PYTHON run.py train --fold 0 --pretrained-weights /path/to/checkpoint.pth
+$PYTHON run.py train --fold 0 --val-best --npz
 ```
 
-参数：
+Key args:
 
-- `--fold`: 必填，fold 编号
-- `--npz`: 验证时保留概率图
-- `--validation-only`: 不训练，只加载 checkpoint 做完整验证
-- `--restart-training`: 清理当前 fold 产物后重新开始
-- `--pretrained-weights`: 指定预训练权重
-- `--disable-checkpointing`: 不写 checkpoint
-- `--val-best`: 验证时优先使用 `checkpoint_best.pth`
+- `--fold`: required
+- `--npz`: keep validation probabilities
+- `--validation-only`: skip training and only run validation from a checkpoint
+- `--restart-training`: force a fresh run for the fold
+- `--pretrained-weights`: load external weights before training
+- `--disable-checkpointing`: do not write checkpoints
+- `--val-best`: prefer `checkpoint_best.pth` for validation
 
-默认输出到 `training_results/fold<fold>/`。
+Outputs go to `training_results/fold<fold>/`.
 
 ### `train-all`
 
-按默认 folds 顺序依次执行 `train`。
+Run the default folds sequentially.
 
 ```bash
-python run.py train-all
-python run.py train-all --restart-training
-python run.py train-all --validation-only --val-best
-python run.py train-all --npz
+$PYTHON run.py train-all
+$PYTHON run.py train-all --restart-training
+$PYTHON run.py train-all --validation-only --val-best
+$PYTHON run.py train-all --npz
 ```
-
-参数与 `train` 基本一致，但不需要传 `--fold`。运行前会先打印每个 fold 的计划动作。
 
 ### `validate`
 
-使用已有 checkpoint 对单个 fold 跑完整验证，不启动训练循环。
+Run validation for one fold using an existing checkpoint.
 
 ```bash
-python run.py validate --fold 0
-python run.py validate --fold 0 --val-best
-python run.py validate --fold 0 --npz
+$PYTHON run.py validate --fold 0
+$PYTHON run.py validate --fold 0 --val-best
+$PYTHON run.py validate --fold 0 --npz
 ```
 
-参数：
+Outputs:
 
-- `--fold`: 必填，fold 编号
-- `--npz`: 导出概率图
-- `--val-best`: 优先使用 `checkpoint_best.pth`
-
-默认输出：
-
-- 分割结果：`training_results/fold<fold>/validation/`
-- validation summary：`training_results/fold<fold>/validation/summary.json`
-- fold summary 副本：`training_results/fold<fold>/summary.json`
+- Validation predictions: `training_results/fold<fold>/validation/`
+- Validation summary: `training_results/fold<fold>/validation/summary.json`
+- Fold summary copy: `training_results/fold<fold>/summary.json`
 
 ### `find-best-config`
 
-从已有结果里选出 best config，并写出后续推理所需的信息文件。
+Aggregate available validation results and write inference helper files.
 
 ```bash
-python run.py find-best-config
-python run.py find-best-config --search-root training_results
-python run.py find-best-config --search-root /abs/path/to/summary_parent
+$PYTHON run.py find-best-config
+$PYTHON run.py find-best-config --search-root training_results
+$PYTHON run.py find-best-config --search-root /abs/path/to/summary_parent
 ```
 
-它会：
+This writes:
 
-- 找到当前可用的 validation folds
-- 自动聚合 shared folds 的 cross-validation 结果
-- 输出 best config 结果
-- 写出 `inference_information.json`
-- 写出 `inference_instructions.txt`
-- 写出 `postprocessing.json`
-
-参数：
-
-- `--search-root`: 可选，手动指定扫描目录或 `summary.json` 所在位置；不传时走项目默认流程
+- `inference_information.json`
+- `inference_instructions.txt`
+- `postprocessing.json`
 
 ### `predict`
 
-从训练集随机抽样若干 case 做推理，并自动评估。
+Sample training cases, run prediction, then evaluate automatically.
 
 ```bash
-python run.py predict --sample-training-cases 12 --sample-seed 123
-python run.py predict --sample-training-cases 12 --sample-seed 123 --val-best --npz
-python run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir evaluation/results/demo_predict --overwrite
+$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123
+$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123 --val-best --npz
+$PYTHON run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir evaluation/results/demo_predict --overwrite
 ```
 
-说明：
+Notes:
 
-- `predict` 不暴露 `--fold`
-- 会自动选择可用 checkpoint
-- 若 `find-best-config` 已生成 `inference_information.json`，会优先使用其中推荐的 folds
-- 会自动生成 `sample_selection.json` 和 `summary.json`
-- 当前代码会在写预测文件前自动创建输出目录
+- `predict` does not expose `--fold`
+- It auto-selects an available checkpoint
+- If `find-best-config` already wrote `inference_information.json`, recommended folds are preferred
+- It writes `sample_selection.json` and `summary.json` automatically
 
-参数：
+Key args:
 
-- `--sample-training-cases`: 必填，抽样数量
-- `--sample-seed`: 必填，随机种子
-- `--npz`: 保留概率图
-- `--val-best`: 优先使用 `checkpoint_best.pth`
-- `--overwrite`: 覆盖已有输出目录
-- `--output-dir`: 自定义输出目录
-
-默认输出位于 `evaluation/results/`。
+- `--sample-training-cases`: required
+- `--sample-seed`: required
+- `--npz`: keep probability maps
+- `--val-best`: prefer `checkpoint_best.pth`
+- `--overwrite`: allow replacing an existing output directory
+- `--output-dir`: custom prediction directory
 
 ### `evaluate`
 
-对某个验证目录或预测目录做指标评估，并自动生成完整报告。
+Evaluate a validation directory or prediction directory and generate a report.
 
 ```bash
-python run.py evaluate
-python run.py evaluate --fold 0
-python run.py evaluate --pred-dir evaluation/results/demo_predict
+$PYTHON run.py evaluate
+$PYTHON run.py evaluate --fold 0
+$PYTHON run.py evaluate --pred-dir evaluation/results/demo_predict
 ```
 
-默认行为：
+Default behavior with no `--fold` and no `--pred-dir`:
 
-- 自动从 `evaluation/results/` 中找到最近一次 `predict` 产出的目录
-- 直接对这个目录做评估
-- 把 summary 写回 `evaluation/results/`
-- 自动生成对应的报告目录
+- Find the most recent prediction directory under `evaluation/results/`
+- Evaluate it
+- Write a summary JSON
+- Generate a report directory
 
-参数：
+Key args:
 
-- `--fold`: 使用 `training_results/fold<fold>/validation/` 作为预测目录
-- `--pred-dir`: 显式指定预测目录
-- `--gt-dir`: 自定义 GT 目录
-- `--output-file`: 自定义 summary 输出路径
-- `--raw-dataset-dir`: 报告读取原始影像时使用的数据目录
-- `--report-output-dir`: 自定义报告输出目录
-- `--sample-selection-file`: 给报告附带抽样清单
-- `--num-processes`: 评估并行进程数
-- `--chill`: 允许预测目录不是完整全集
+- `--fold`: use `training_results/fold<fold>/validation/`
+- `--pred-dir`: explicit prediction directory
+- `--gt-dir`: custom GT directory
+- `--output-file`: custom summary output path
+- `--raw-dataset-dir`: raw data directory used for the report
+- `--report-output-dir`: custom report output directory
+- `--sample-selection-file`: attach a sample list to the report
+- `--num-processes`: metric worker count
+- `--chill`: allow partial predictions instead of a full set
 
 ### `clean-last-results`
 
-清理自动管理的推理评估产物。
+Remove the latest auto-managed prediction/evaluation outputs.
 
 ```bash
-python run.py clean-last-results
+$PYTHON run.py clean-last-results
 ```
 
-它会清理：
+This does not remove fold checkpoints or the main validation outputs.
 
-- `evaluation/results/` 下最近一次 `predict` 产出的目录
-- 对应自动生成的 `evaluation/results/<pred_dir_name>_summary.json`
-- 对应自动生成的报告目录
-- `training_results/` 下的 `inference_information.json`
-- `training_results/` 下的 `inference_instructions.txt`
-- `training_results/` 下的 `postprocessing.json`
-- 默认 folds 对应的 cross-validation 汇总目录
+## Standalone Scripts
 
-不会删除 fold 训练 checkpoint 或 validation 主产物。
+### First Case Visualization
 
-## 独立脚本
-
-这两个脚本不走 `run.py`，但仍然是仓库的一部分。
-
-### 首病例可视化
-
-用于快速看 BraTS 原始病例的四模态、分割、overlay、bbox 和强度分布。
+Quick visualization of the first BraTS case found in the archive.
 
 ```bash
-python first_case_visualization/visualize_first_case.py
-python first_case_visualization/visualize_first_case.py \
+$PYTHON first_case_visualization/visualize_first_case.py
+$PYTHON first_case_visualization/visualize_first_case.py \
   --data-root BraTS_final_Dataset/archive/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData \
   --output-dir first_case_visualization/output
 ```
 
-对应代码：
+Script:
 
 - [visualize_first_case.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/first_case_visualization/visualize_first_case.py)
 
-### 数据准备
+### Data Preparation
 
-把原始 BraTS2020 训练数据转换成项目使用的 `nnUNet_raw/Dataset220_BraTS2020`。
+Convert the original BraTS2020 training set into the project raw dataset layout.
 
 ```bash
-conda run -n pytorch python data_preparation/scripts/prepare_brats2020_for_project.py
-conda run -n pytorch python data_preparation/scripts/prepare_brats2020_for_project.py \
+$PYTHON data_preparation/scripts/prepare_brats2020_for_project.py
+$PYTHON data_preparation/scripts/prepare_brats2020_for_project.py \
   --src-root BraTS_final_Dataset/archive/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData \
   --project-raw BraTS_final_Dataset/nnUNet_raw
 ```
 
-如需强制重建：
+Force rebuild:
 
 ```bash
-conda run -n pytorch python data_preparation/scripts/prepare_brats2020_for_project.py --force
+$PYTHON data_preparation/scripts/prepare_brats2020_for_project.py --force
 ```
 
-对应代码和契约：
+Related files:
 
 - [prepare_brats2020_for_project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/data_preparation/scripts/prepare_brats2020_for_project.py)
 - [data_contract.md](/home/Creeken/Desktop/machine-learning-test/BraTS_final/data_preparation/docs/data_contract.md)
 - [raw_dataset.json](/home/Creeken/Desktop/machine-learning-test/BraTS_final/data_preparation/metadata/raw_dataset.json)
 
-## 代码组织
+## Code Layout
 
-- `training/src/core/`: 训练配置、运行时路径、主训练器
-- `training/src/data/`: 数据集、标签管理、数据增强、loader
-- `training/src/models/`: BraTS 训练/推理模型定义
-- `training/src/optimization/`: 损失函数、优化器、调度器、预训练权重
-- `training/src/monitoring/`: 训练日志与异步绘图
-- `validation/src/inference.py`: 滑窗推理、恢复原空间、分割写出
-- `validation/src/find_best_config.py`: best-config 选择与推理说明生成
-- `validation/src/predict.py`: 抽样预测
-- `validation/src/visualization.py`: overlay、调试图、训练进度图
-- `evaluation/src/metrics.py`: 指标计算、summary 序列化、cross-validation 聚合
-- `evaluation/src/generate_evaluation_report.py`: 评估报告生成
+- `training/src/core/`: runtime config and trainer
+- `training/src/data/`: dataset, labels, transforms, data loading
+- `training/src/models/`: model definitions
+- `training/src/optimization/`: losses, optimizer, scheduler, pretrained loading
+- `training/src/monitoring/`: logs and plots
+- `validation/src/`: validation, prediction, inference, best-config selection
+- `evaluation/src/`: metrics and report generation
 
-## 其他说明
+## Notes
 
-- 所有命令都支持 `--help`
-- 运行产物主要写入 `training_results/`、`evaluation/results/`、`first_case_visualization/output/`，这些目录默认不纳入版本控制
-- 如果代码结构和文档冲突，以这个根 README 和 `python run.py --help` 为准
+- All commands support `--help`
+- Main generated outputs live under `training_results/`, `evaluation/results/`, and `first_case_visualization/output/`
+- If the README and code disagree, trust the code and inspect [cli.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/cli.py), [project.py](/home/Creeken/Desktop/machine-learning-test/BraTS_final/project.py), and `run.py --help` with the PyTorch Python above

@@ -46,7 +46,16 @@ def get_raw_dataset_dir() -> Path:
 
 def get_preprocessed_dataset_dir() -> Path:
     cfg = load_project_config()
-    return resolve_project_path(cfg["paths"]["preprocessed_root"]) / cfg["dataset"]["name"]
+    preprocessed_root = resolve_project_path(cfg["paths"]["preprocessed_root"])
+    nested_dir = preprocessed_root / cfg["dataset"]["name"]
+
+    # Support both the legacy nnUNet layout with a dataset subdirectory and the
+    # flattened layout where dataset metadata/files live directly under preprocessed_root.
+    if (preprocessed_root / "dataset.json").is_file():
+        return preprocessed_root
+    if nested_dir.is_dir():
+        return nested_dir
+    return preprocessed_root
 
 
 def get_primary_raw_dataset_dir() -> Path:
