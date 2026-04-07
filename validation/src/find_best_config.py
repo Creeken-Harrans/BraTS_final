@@ -10,7 +10,6 @@ from project import (
     get_dataset_name,
     get_default_folds,
     get_model_name,
-    get_project_root,
     get_results_root,
     resolve_fold_validation_dir,
 )
@@ -35,20 +34,6 @@ def _dedupe_paths(paths: list[Path]) -> list[Path]:
 
 def _default_search_roots() -> list[Path]:
     return _dedupe_paths([get_results_root()])
-
-
-def _legacy_search_root_candidates() -> list[Path]:
-    workspace_root = get_project_root().parent
-    return _dedupe_paths(
-        [
-            workspace_root
-            / "BraTS"
-            / "03_training_and_results"
-            / "artifacts"
-            / "nnUNet_results",
-            workspace_root / "BraTS" / "04_inference_and_evaluation" / "evaluation",
-        ]
-    )
 
 
 def _format_folds_label(folds: tuple[int, ...]) -> str:
@@ -180,18 +165,6 @@ def _build_no_summary_error(search_roots: list[str | Path] | None) -> RuntimeErr
         *[f"  - {path}" for path in searched_roots],
         "Generate results first with `train`, `validate`, or `predict`.",
     ]
-
-    legacy_roots = [path for path in _legacy_search_root_candidates() if path.exists()]
-    legacy_summaries = _discover_summary_files(legacy_roots) if legacy_roots else []
-    if legacy_summaries:
-        message_lines.extend(
-            [
-                "Found summary.json files in the neighboring legacy BraTS project.",
-                "You can scan them with:",
-                "  python run.py find-best-config --search-root "
-                + " ".join(str(path) for path in legacy_roots),
-            ]
-        )
 
     return RuntimeError("\n".join(message_lines))
 

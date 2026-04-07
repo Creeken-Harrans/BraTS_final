@@ -18,7 +18,6 @@ from project import (
     get_preprocessed_dataset_dir,
     get_primary_preprocessed_dataset_dir,
     get_project_root,
-    get_legacy_fold_artifacts_dir,
     get_results_root,
     get_training_cases_dir,
     resolve_fold_artifacts_dir,
@@ -52,20 +51,20 @@ def get_training_logs_dir(fold: int) -> Path:
 
 
 def resolve_resume_checkpoint(fold: int) -> Path | None:
-    for output_dir in (get_training_output_dir(fold), get_legacy_fold_artifacts_dir(fold)):
-        for checkpoint_name in get_checkpoint_priority():
-            candidate = output_dir / checkpoint_name
-            if candidate.is_file():
-                return candidate
+    output_dir = get_training_output_dir(fold)
+    for checkpoint_name in get_checkpoint_priority():
+        candidate = output_dir / checkpoint_name
+        if candidate.is_file():
+            return candidate
     return None
 
 
 def resolve_training_resume_checkpoint(fold: int) -> Path | None:
-    for output_dir in (get_training_output_dir(fold), get_legacy_fold_artifacts_dir(fold)):
-        for checkpoint_name in ("checkpoint_latest.pth", "checkpoint_best.pth", "checkpoint_final.pth"):
-            candidate = output_dir / checkpoint_name
-            if candidate.is_file():
-                return candidate
+    output_dir = get_training_output_dir(fold)
+    for checkpoint_name in ("checkpoint_latest.pth", "checkpoint_best.pth", "checkpoint_final.pth"):
+        candidate = output_dir / checkpoint_name
+        if candidate.is_file():
+            return candidate
     return None
 
 
@@ -75,26 +74,22 @@ def resolve_validation_checkpoint(fold: int, *, use_best: bool = False) -> Path 
         if use_best
         else ("checkpoint_final.pth", "checkpoint_best.pth", "checkpoint_latest.pth")
     )
-    for output_dir in (get_training_output_dir(fold), get_legacy_fold_artifacts_dir(fold)):
-        for checkpoint_name in preferred:
-            candidate = output_dir / checkpoint_name
-            if candidate.is_file():
-                return candidate
+    output_dir = get_training_output_dir(fold)
+    for checkpoint_name in preferred:
+        candidate = output_dir / checkpoint_name
+        if candidate.is_file():
+            return candidate
     return None
 
 
 def read_training_state(fold: int) -> dict[str, Any] | None:
-    for training_state_file in (
-        get_training_output_dir(fold) / "training_state.json",
-        get_legacy_fold_artifacts_dir(fold) / "training_state.json",
-    ):
-        if not training_state_file.is_file():
-            continue
-        try:
-            return json.loads(training_state_file.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            continue
-    return None
+    training_state_file = get_training_output_dir(fold) / "training_state.json"
+    if not training_state_file.is_file():
+        return None
+    try:
+        return json.loads(training_state_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
 
 
 def resolve_target_num_epochs() -> int:

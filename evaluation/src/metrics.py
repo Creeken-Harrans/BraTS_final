@@ -195,25 +195,9 @@ def evaluate_prediction_folder(
 ) -> dict:
     pred_dir = Path(pred_dir)
     gt_dir = Path(gt_dir) if gt_dir is not None else get_gt_segmentations_dir()
-    training_state_candidates = (
-        pred_dir.parent / "training_state.json",
-        pred_dir.parent.parent / "training_state.json",
+    dataset_json = json.loads(
+        (get_primary_preprocessed_dataset_dir() / "dataset.json").read_text(encoding="utf-8")
     )
-    dataset_json = None
-    for candidate in training_state_candidates:
-        if candidate.is_file():
-            dataset_json = json.loads(candidate.read_text(encoding="utf-8"))
-            break
-    if dataset_json is None:
-        dataset_json = json.loads((get_primary_preprocessed_dataset_dir() / "dataset.json").read_text(encoding="utf-8"))
-    else:
-        data_layout = dataset_json.get("data_layout")
-        if data_layout and data_layout.get("dataset_json"):
-            dataset_json = json.loads(
-                Path(data_layout["dataset_json"]).read_text(encoding="utf-8")
-            )
-        else:
-            dataset_json = json.loads((get_primary_preprocessed_dataset_dir() / "dataset.json").read_text(encoding="utf-8"))
     label_manager = load_brats_label_manager(dataset_json)
     return compute_metrics_on_folder(
         gt_dir,

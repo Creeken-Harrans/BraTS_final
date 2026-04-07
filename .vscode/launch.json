@@ -1,21 +1,27 @@
 {
-    "name": "BraTS_final: train fold0 (1 epoch)",
-    "type": "debugpy",
-    "request": "launch",
-    "program": "${workspaceFolder}/run.py",
-    "cwd": "${workspaceFolder}",
-    "console": "integratedTerminal",
-    "justMyCode": false,
-    "args": [
-        "train",
-        "--fold",
-        "0",
-        "--restart-training"
-    ],
-    "env": {
-        "PYTHONPATH": "${workspaceFolder}",
-        "BRATS_FINAL_USE_COMPILE": "0",
-        "BRATS_FINAL_EPOCHS": "1"
-    },
-    "configurations": []
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BraTS_final: train fold0 (1 epoch)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "stopOnEntry": true,
+            "logToFile": true,
+            "args": [
+                "train",
+                "--fold",
+                "0",
+                "--restart-training"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "BRATS_FINAL_USE_COMPILE": "0",
+                "BRATS_FINAL_EPOCHS": "1"
+            }
+        }
+    ]
 }

@@ -1,5 +1,6 @@
 *.nii
 *.nii.gz
+*.b2nd
 
 # Model checkpoints and arrays
 *.pth
