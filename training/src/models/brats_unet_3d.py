@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
-
-from torch import nn
+from typing import Any  # noqa: F401
+import torch.nn as nn
 
 from dynamic_network_architectures.architectures.unet import PlainConvUNet
 
@@ -46,9 +45,7 @@ class BratsUNet3DConfig:
     dropout_op: type[nn.Module] | None = None
     dropout_op_kwargs: dict[str, Any] | None = None
     nonlin: type[nn.Module] = nn.LeakyReLU
-    nonlin_kwargs: dict[str, Any] = field(
-        default_factory=lambda: {"inplace": True}
-    )
+    nonlin_kwargs: dict[str, Any] = field(default_factory=lambda: {"inplace": True})
 
 
 class BratsUNet3D(PlainConvUNet):

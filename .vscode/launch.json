@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BraTS_final: train-all (debug-fast)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "train-all"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "BRATS_FINAL_USE_COMPILE": "0",
+                "BRATS_FINAL_EPOCHS": "1",
+                "BRATS_FINAL_TRAIN_ITERS": "2",
+                "BRATS_FINAL_VAL_ITERS": "1"
+            }
+        },
+        {
+            "name": "BraTS_final: train-all (full)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "train-all"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "BRATS_FINAL_USE_COMPILE": "0"
+            }
+        }
+    ]
+}

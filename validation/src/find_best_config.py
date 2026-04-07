@@ -11,7 +11,6 @@ from project import (
     get_default_folds,
     get_model_name,
     get_project_root,
-    get_reference_plans_file,
     get_results_root,
     resolve_fold_validation_dir,
 )
@@ -243,7 +242,6 @@ def _write_inference_artifacts(best: dict[str, Any]) -> tuple[Path, Path]:
             "result_on_crossval_post_pp": best["metric_value"],
             "summary_path": best["summary_path"],
             "postprocessing_file": str(postprocessing_file),
-            "some_plans_file": str(get_reference_plans_file()),
             "selected_model_or_models": [
                 {
                     "trainer": get_model_name(),

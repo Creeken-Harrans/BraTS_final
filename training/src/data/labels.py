@@ -5,7 +5,8 @@ from typing import Callable, Optional, Union
 import numpy as np
 import torch
 from acvl_utils.cropping_and_padding.bounding_boxes import insert_crop_into_image
-from torch import Tensor
+
+# from torch import Tensor
 
 
 def softmax_helper_dim0(x: Tensor) -> Tensor:
@@ -69,7 +70,9 @@ class RegionLabelManager:
         if not self._has_regions or self._force_use_labels:
             return None
         if self.regions_class_order is None:
-            raise RuntimeError("regions_class_order is required for region-based training.")
+            raise RuntimeError(
+                "regions_class_order is required for region-based training."
+            )
         regions: list[Union[int, tuple[int, ...]]] = []
         for name, value in self.label_dict.items():
             if name == "ignore":
@@ -84,7 +87,9 @@ class RegionLabelManager:
                 value = tuple(value)
             regions.append(value)
         if len(regions) != len(self.regions_class_order):
-            raise RuntimeError("regions_class_order length must match number of regions.")
+            raise RuntimeError(
+                "regions_class_order length must match number of regions."
+            )
         return regions
 
     @staticmethod
@@ -131,7 +136,9 @@ class RegionLabelManager:
 
     @property
     def num_segmentation_heads(self) -> int:
-        return len(self.foreground_regions) if self.has_regions else len(self.all_labels)
+        return (
+            len(self.foreground_regions) if self.has_regions else len(self.all_labels)
+        )
 
     def apply_inference_nonlin(
         self, logits: Union[np.ndarray, Tensor]
@@ -147,7 +154,9 @@ class RegionLabelManager:
     ) -> Union[np.ndarray, Tensor]:
         if self.has_regions:
             if isinstance(predicted_probabilities, np.ndarray):
-                segmentation = np.zeros(predicted_probabilities.shape[1:], dtype=np.uint16)
+                segmentation = np.zeros(
+                    predicted_probabilities.shape[1:], dtype=np.uint16
+                )
             else:
                 segmentation = torch.zeros(
                     predicted_probabilities.shape[1:],
@@ -181,7 +190,10 @@ class RegionLabelManager:
         original_shape: list[int] | tuple[int, ...],
     ):
         output = (
-            np.zeros((predicted_probabilities.shape[0], *original_shape), dtype=predicted_probabilities.dtype)
+            np.zeros(
+                (predicted_probabilities.shape[0], *original_shape),
+                dtype=predicted_probabilities.dtype,
+            )
             if isinstance(predicted_probabilities, np.ndarray)
             else torch.zeros(
                 (predicted_probabilities.shape[0], *original_shape),
