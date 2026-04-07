@@ -31,7 +31,9 @@ def _resolve_latest_prediction_dir() -> Path:
         for sample_selection in evaluation_root.glob("*/sample_selection.json"):
             prediction_dir = sample_selection.parent
             if any(prediction_dir.glob("*.nii.gz")):
-                candidates.append((sample_selection.stat().st_mtime, prediction_dir.resolve()))
+                candidates.append(
+                    (sample_selection.stat().st_mtime, prediction_dir.resolve())
+                )
     if not candidates:
         raise RuntimeError(
             "evaluate could not find a previous predict output automatically.\n"
@@ -41,7 +43,9 @@ def _resolve_latest_prediction_dir() -> Path:
     return candidates[0][1]
 
 
-def _resolve_report_output_dir(fold: int | None, pred_dir: Path, output_dir: str | None) -> Path:
+def _resolve_report_output_dir(
+    fold: int | None, pred_dir: Path, output_dir: str | None
+) -> Path:
     if output_dir is not None:
         return Path(output_dir).resolve()
     if fold is not None:
@@ -65,7 +69,9 @@ def _resolve_find_best_artifact_paths() -> tuple[Path, Path, Path, Path]:
     folds_label = "_".join(str(fold) for fold in get_default_folds())
     model_identifier = f"{get_model_name()}__ProjectPlans__{get_configuration_name()}"
     inference_dir = get_results_root() / get_dataset_name()
-    crossval_dir = get_results_root() / model_identifier / f"crossval_results_folds_{folds_label}"
+    crossval_dir = (
+        get_results_root() / model_identifier / f"crossval_results_folds_{folds_label}"
+    )
     return (
         crossval_dir,
         inference_dir / "inference_information.json",
@@ -104,7 +110,9 @@ def cmd_train(args: argparse.Namespace) -> int:
     ensure_preprocessed_training_inputs()
     device = build_device()
     training_checkpoint = resolve_training_resume_checkpoint(args.fold)
-    validation_checkpoint = resolve_validation_checkpoint(args.fold, use_best=args.val_best)
+    validation_checkpoint = resolve_validation_checkpoint(
+        args.fold, use_best=args.val_best
+    )
 
     if (
         not args.restart_training
@@ -112,7 +120,7 @@ def cmd_train(args: argparse.Namespace) -> int:
         and args.pretrained_weights is None
         and training_checkpoint is not None
         and training_fold_is_complete(args.fold)
-        ):
+    ):
         print(
             "[INFO] Fold is already marked completed. "
             "Skipping trainer startup.\n"
@@ -176,10 +184,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
         f"[OK] Validation summary written to: "
         f"{resolve_fold_validation_dir(args.fold).parent / 'summary.json'}"
     )
-    print(
-        f"[OK] Foreground mean Dice: "
-        f"{summary['foreground_mean'].get('Dice')}"
-    )
+    print(f"[OK] Foreground mean Dice: " f"{summary['foreground_mean'].get('Dice')}")
     return 0
 
 
@@ -200,7 +205,9 @@ def cmd_find_best_config(args: argparse.Namespace) -> int:
     print("***Determining postprocessing for best model/ensemble***")
     print(f"[OK] Cross-validation summary: {best['summary_path']}")
     if best.get("auto_prepared_cv_dir"):
-        print(f"[OK] Cross-validation results prepared in: {best['auto_prepared_cv_dir']}")
+        print(
+            f"[OK] Cross-validation results prepared in: {best['auto_prepared_cv_dir']}"
+        )
     print(f"[OK] Inference info: {result['inference_information_path']}")
     print(f"[OK] Inference instructions: {result['inference_instructions_path']}")
     return 0
@@ -254,7 +261,8 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
         num_processes=args.num_processes,
         chill=(
             True
-            if (args.fold is not None and args.pred_dir is None) or auto_selected_prediction
+            if (args.fold is not None and args.pred_dir is None)
+            or auto_selected_prediction
             else args.chill
         ),
     )
@@ -263,7 +271,9 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
         if args.raw_dataset_dir
         else get_primary_raw_dataset_dir()
     )
-    report_output_dir = _resolve_report_output_dir(args.fold, pred_dir, args.report_output_dir)
+    report_output_dir = _resolve_report_output_dir(
+        args.fold, pred_dir, args.report_output_dir
+    )
     report_output_dir.mkdir(parents=True, exist_ok=True)
     sample_selection_file = (
         Path(args.sample_selection_file).resolve()
@@ -306,7 +316,9 @@ def cmd_clean_last_results(_: argparse.Namespace) -> int:
             removed.append(path)
 
     if not removed:
-        print("[OK] No previous auto-managed predict/evaluate/find-best results were found.")
+        print(
+            "[OK] No previous auto-managed predict/evaluate/find-best results were found."
+        )
         return 0
 
     if cleaned_pred_name is not None:
@@ -326,7 +338,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     train = subparsers.add_parser("train", help="Prepare one training fold")
     train.add_argument("--fold", type=int, required=True, help="Fold index")
-    train.add_argument("--npz", action="store_true", help="Keep validation probabilities")
+    train.add_argument(
+        "--npz", action="store_true", help="Keep validation probabilities"
+    )
     train.add_argument("--validation-only", action="store_true")
     train.add_argument("--restart-training", action="store_true")
     train.add_argument("--pretrained-weights", type=str, default=None)
@@ -335,7 +349,9 @@ def build_parser() -> argparse.ArgumentParser:
     train.set_defaults(func=cmd_train)
 
     train_all = subparsers.add_parser("train-all", help="Prepare all default folds")
-    train_all.add_argument("--npz", action="store_true", help="Keep validation probabilities")
+    train_all.add_argument(
+        "--npz", action="store_true", help="Keep validation probabilities"
+    )
     train_all.add_argument("--validation-only", action="store_true")
     train_all.add_argument("--restart-training", action="store_true")
     train_all.add_argument("--pretrained-weights", type=str, default=None)
@@ -343,9 +359,13 @@ def build_parser() -> argparse.ArgumentParser:
     train_all.add_argument("--val-best", action="store_true")
     train_all.set_defaults(func=cmd_train_all)
 
-    validate = subparsers.add_parser("validate", help="Run validation for one fold from an existing checkpoint")
+    validate = subparsers.add_parser(
+        "validate", help="Run validation for one fold from an existing checkpoint"
+    )
     validate.add_argument("--fold", type=int, required=True, help="Fold index")
-    validate.add_argument("--npz", action="store_true", help="Keep validation probabilities")
+    validate.add_argument(
+        "--npz", action="store_true", help="Keep validation probabilities"
+    )
     validate.add_argument("--val-best", action="store_true")
     validate.set_defaults(func=cmd_validate)
 
@@ -365,21 +385,61 @@ def build_parser() -> argparse.ArgumentParser:
         "predict",
         help="Run inference on a sampled subset of training cases",
     )
-    predict.add_argument("--sample-training-cases", type=int, required=True, help="Number of training cases to sample")
-    predict.add_argument("--sample-seed", type=int, required=True, help="Random seed used for sampling cases")
-    predict.add_argument("--npz", action="store_true", help="Keep restored probability maps")
-    predict.add_argument("--val-best", action="store_true", help="Prefer checkpoint_best.pth over checkpoint_final.pth")
-    predict.add_argument("--overwrite", action="store_true", help="Allow writing into an existing non-empty output directory")
-    predict.add_argument("--output-dir", type=str, default=None, help="Prediction output directory")
+    predict.add_argument(
+        "--sample-training-cases",
+        type=int,
+        required=True,
+        help="Number of training cases to sample",
+    )
+    predict.add_argument(
+        "--sample-seed",
+        type=int,
+        required=True,
+        help="Random seed used for sampling cases",
+    )
+    predict.add_argument(
+        "--npz", action="store_true", help="Keep restored probability maps"
+    )
+    predict.add_argument(
+        "--val-best",
+        action="store_true",
+        help="Prefer checkpoint_best.pth over checkpoint_final.pth",
+    )
+    predict.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow writing into an existing non-empty output directory",
+    )
+    predict.add_argument(
+        "--output-dir", type=str, default=None, help="Prediction output directory"
+    )
     predict.set_defaults(func=cmd_predict)
 
-    evaluate = subparsers.add_parser("evaluate", help="Evaluate a validation/prediction folder")
-    evaluate.add_argument("--fold", type=int, default=None, help="Use fold<n>/validation as prediction folder")
-    evaluate.add_argument("--pred-dir", type=str, default=None, help="Prediction directory to evaluate")
-    evaluate.add_argument("--gt-dir", type=str, default=None, help="Ground-truth directory")
+    evaluate = subparsers.add_parser(
+        "evaluate", help="Evaluate a validation/prediction folder"
+    )
+    evaluate.add_argument(
+        "--fold",
+        type=int,
+        default=None,
+        help="Use fold<n>/validation as prediction folder",
+    )
+    evaluate.add_argument(
+        "--pred-dir", type=str, default=None, help="Prediction directory to evaluate"
+    )
+    evaluate.add_argument(
+        "--gt-dir", type=str, default=None, help="Ground-truth directory"
+    )
     evaluate.add_argument("--output-file", type=str, default=None)
-    evaluate.add_argument("--raw-dataset-dir", type=str, default=None, help="Raw dataset directory with imagesTr")
-    evaluate.add_argument("--report-output-dir", type=str, default=None, help="Report output directory")
+    evaluate.add_argument(
+        "--raw-dataset-dir",
+        type=str,
+        default=None,
+        help="Raw dataset directory with imagesTr",
+    )
+    evaluate.add_argument(
+        "--report-output-dir", type=str, default=None, help="Report output directory"
+    )
     evaluate.add_argument("--sample-selection-file", type=str, default=None)
     evaluate.add_argument("--num-processes", type=int, default=1)
     evaluate.add_argument("--chill", action="store_true")
