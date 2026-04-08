@@ -188,7 +188,7 @@ Outputs:
 
 ### `find-best-config`
 
-Aggregate available validation results and write inference helper files.
+Aggregate available validation results, choose the current best result, and write the inference helper files required by `predict`.
 
 ```bash
 python run.py find-best-config
@@ -204,9 +204,10 @@ This writes:
 
 ### `predict`
 
-Sample training cases, run prediction, then evaluate automatically.
+Sample training cases with the result already selected by `find-best-config`, run prediction, then evaluate automatically.
 
 ```bash
+python run.py find-best-config
 python run.py predict --sample-training-cases 12 --sample-seed 123
 python run.py predict --sample-training-cases 12 --sample-seed 123 --val-best --npz
 python run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir evaluation/results/demo_predict --overwrite
@@ -215,8 +216,8 @@ python run.py predict --sample-training-cases 12 --sample-seed 123 --output-dir 
 Notes:
 
 - `predict` does not expose `--fold`
-- It auto-selects an available checkpoint
-- If `find-best-config` already wrote `inference_information.json`, recommended folds are preferred
+- `predict` only uses the best result already written by `find-best-config`
+- If `inference_information.json` is missing, invalid, or points to a missing summary/checkpoint, `predict` raises `RuntimeError`
 - It writes `sample_selection.json` and `summary.json` automatically
 
 Key args:

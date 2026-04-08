@@ -11,11 +11,11 @@ import numpy as np
 import torch
 
 from evaluation.src.metrics import evaluate_prediction_folder
-from project import get_dataset_name, get_default_folds, get_evaluation_root, get_gt_segmentations_dir, get_primary_preprocessed_dataset_dir, get_results_root, get_training_cases_dir, resolve_fold_validation_dir
+from project import get_dataset_name, get_evaluation_root, get_gt_segmentations_dir, get_primary_preprocessed_dataset_dir, get_results_root, get_training_cases_dir
 from training.src.models import BRATS_3D_PATCH_SIZE, build_brats_inference_model
 from training.src.data.dataset import infer_preprocessed_dataset_class
 from training.src.data.labels import load_brats_label_manager
-from training.src.core.runtime import build_device, resolve_validation_checkpoint
+from training.src.core.runtime import build_device
 from .inference import predict_sliding_window_logits, restore_prediction_to_original_space, write_segmentation_nifti
 
 
@@ -46,58 +46,81 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _load_fold_score(fold: int) -> float | None:
-    summary_path = resolve_fold_validation_dir(fold) / "summary.json"
-    if not summary_path.is_file():
-        return None
-    try:
-        summary = _load_json(summary_path)
-    except json.JSONDecodeError:
-        return None
-    value = summary.get("foreground_mean", {}).get("Dice")
-    if not isinstance(value, (int, float)):
-        return None
-    return float(value)
-
-
-def _load_recommended_folds() -> tuple[int, ...] | None:
+def _load_best_config_payload() -> dict[str, Any]:
     inference_information = get_results_root() / get_dataset_name() / "inference_information.json"
     if not inference_information.is_file():
-        return None
+        raise RuntimeError(
+            "Prediction requires an existing best-config selection.\n"
+            f"Missing: {inference_information}\n"
+            "Run `python run.py find-best-config` first."
+        )
     try:
         payload = _load_json(inference_information)
-    except json.JSONDecodeError:
-        return None
-    folds = payload.get("folds")
-    if not isinstance(folds, list) or not all(isinstance(fold, int) for fold in folds):
-        return None
-    return tuple(folds)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"Best-config artifact is not valid JSON: {inference_information}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(
+            f"Best-config artifact has an invalid structure: {inference_information}"
+        )
+    return payload
 
 
 def _resolve_prediction_fold(use_best_checkpoint: bool) -> tuple[int, Path, str]:
-    scored_candidates: list[tuple[float, int, Path]] = []
-    fallback_candidates: list[tuple[int, Path]] = []
-    candidate_folds = _load_recommended_folds() or tuple(get_default_folds())
-    for fold in candidate_folds:
-        checkpoint = resolve_validation_checkpoint(fold, use_best=use_best_checkpoint)
-        if checkpoint is None:
-            continue
-        fallback_candidates.append((fold, checkpoint))
-        score = _load_fold_score(fold)
-        if score is not None:
-            scored_candidates.append((score, fold, checkpoint))
+    payload = _load_best_config_payload()
+    best = payload.get("best_model_or_ensemble")
+    if not isinstance(best, dict):
+        raise RuntimeError(
+            "Best-config artifact does not contain `best_model_or_ensemble`.\n"
+            "Run `python run.py find-best-config` again."
+        )
 
-    if scored_candidates:
-        scored_candidates.sort(key=lambda item: (item[0], -item[1]), reverse=True)
-        _, fold, checkpoint = scored_candidates[0]
-        return fold, checkpoint, "best available validation Dice from find-best-config folds"
+    summary_path_raw = best.get("summary_path")
+    if not isinstance(summary_path_raw, str) or not summary_path_raw:
+        raise RuntimeError(
+            "Best-config artifact does not contain a usable `summary_path`.\n"
+            "Run `python run.py find-best-config` again."
+        )
 
-    if fallback_candidates:
-        fallback_candidates.sort(key=lambda item: item[0])
-        fold, checkpoint = fallback_candidates[0]
-        return fold, checkpoint, "first fold with an available checkpoint from find-best-config folds"
+    summary_path = Path(summary_path_raw).resolve()
+    if not summary_path.is_file():
+        raise RuntimeError(
+            "Best-config artifact points to a missing summary file:\n"
+            f"{summary_path}\n"
+            "Run `python run.py find-best-config` again."
+        )
 
-    raise RuntimeError("No validation checkpoint is available in any default fold.")
+    if summary_path.parent.name == "validation":
+        fold_dir = summary_path.parent.parent
+    else:
+        raise RuntimeError(
+            "Best-config selected a result that does not map to a single fold checkpoint:\n"
+            f"{summary_path}\n"
+            "Run `python run.py find-best-config` on fold summaries if you want to use `predict`."
+        )
+
+    fold_name = fold_dir.name
+    if not fold_name.startswith("fold"):
+        raise RuntimeError(
+            "Best-config selected a result outside the expected fold directory layout:\n"
+            f"{fold_dir}"
+        )
+    try:
+        fold = int(fold_name.removeprefix("fold"))
+    except ValueError as exc:
+        raise RuntimeError(f"Unable to parse fold index from directory name: {fold_dir}") from exc
+
+    checkpoint_name = "checkpoint_best.pth" if use_best_checkpoint else "checkpoint_final.pth"
+    checkpoint = fold_dir / checkpoint_name
+    if not checkpoint.is_file():
+        raise RuntimeError(
+            "The checkpoint required by the selected best-config result is missing:\n"
+            f"{checkpoint}\n"
+            "Recreate the fold output or rerun `python run.py find-best-config` after fixing results."
+        )
+
+    return fold, checkpoint, f"selected by find-best-config: {summary_path}"
 
 
 def _sample_training_case_ids(sample_training_cases: int, sample_seed: int) -> list[str]:
