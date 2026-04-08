@@ -127,6 +127,7 @@ class BratsTrainer:
 
     def print_to_log_file(self, *parts: Any, also_print_to_console: bool = True) -> None:
         line = " ".join(str(part) for part in parts)
+        self.logs_dir.mkdir(parents=True, exist_ok=True)
         with self.log_file.open("a", encoding="utf-8") as handle:
             handle.write(f"{datetime.now().isoformat()} {line}\n")
         if also_print_to_console:
@@ -154,6 +155,7 @@ class BratsTrainer:
                 "remaining_epochs": max(self.epochs - self.current_epoch, 0),
             }
         )
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.training_state_file.write_text(
             json.dumps(make_json_safe(payload), indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
@@ -180,6 +182,7 @@ class BratsTrainer:
             "final_checkpoint_path": self.final_checkpoint_path,
             "best_ema": self.best_ema,
         }
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.debug_file.write_text(
             json.dumps(make_json_safe(payload), indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
@@ -310,6 +313,7 @@ class BratsTrainer:
             "current_epoch": self.current_epoch,
             "config": self.config.__dict__,
         }
+        Path(filename).parent.mkdir(parents=True, exist_ok=True)
         torch.save(checkpoint, filename)
         basename = Path(filename).name
         if basename == "checkpoint_latest.pth":
