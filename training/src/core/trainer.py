@@ -12,7 +12,9 @@ from typing import Any
 import numpy as np
 import SimpleITK as sitk
 import torch
-from batchgenerators.dataloading.single_threaded_augmenter import SingleThreadedAugmenter
+from batchgenerators.dataloading.single_threaded_augmenter import (
+    SingleThreadedAugmenter,
+)
 
 from project import (
     get_gt_segmentations_dir,
@@ -46,7 +48,11 @@ from ..optimization.optim import build_optimizer_and_scheduler
 from ..optimization.pretrained import load_pretrained_weights
 from ..utils import collate_outputs, make_json_safe
 from .config import BratsTrainingConfig, get_default_training_config
-from .runtime import build_training_metadata, get_training_logs_dir, get_training_output_dir
+from .runtime import (
+    build_training_metadata,
+    get_training_logs_dir,
+    get_training_output_dir,
+)
 
 
 def _unwrap_model(model: torch.nn.Module) -> torch.nn.Module:
@@ -81,9 +87,15 @@ class BratsTrainer:
         self.training_cases_dir = get_training_cases_dir()
         self.gt_segmentations_dir = get_gt_segmentations_dir()
         self.raw_dataset_dir = get_primary_raw_dataset_dir()
-        self.dataset_json = json.loads((metadata_dir / "dataset.json").read_text(encoding="utf-8"))
-        self.splits = json.loads((metadata_dir / "splits_final.json").read_text(encoding="utf-8"))
-        self.dataset_class = infer_preprocessed_dataset_class(str(self.training_cases_dir))
+        self.dataset_json = json.loads(
+            (metadata_dir / "dataset.json").read_text(encoding="utf-8")
+        )
+        self.splits = json.loads(
+            (metadata_dir / "splits_final.json").read_text(encoding="utf-8")
+        )
+        self.dataset_class = infer_preprocessed_dataset_class(
+            str(self.training_cases_dir)
+        )
         self.label_manager = load_brats_label_manager(self.dataset_json)
         self.output_dir = get_training_output_dir(self.fold)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -104,8 +116,12 @@ class BratsTrainer:
             use_deep_supervision=self.config.use_deep_supervision,
             num_deep_supervision_outputs=5,
         )
-        self.optimizer, self.lr_scheduler = build_optimizer_and_scheduler(self.model, self.config)
-        self.grad_scaler = torch.amp.GradScaler("cuda") if self.device.type == "cuda" else None
+        self.optimizer, self.lr_scheduler = build_optimizer_and_scheduler(
+            self.model, self.config
+        )
+        self.grad_scaler = (
+            torch.amp.GradScaler("cuda") if self.device.type == "cuda" else None
+        )
 
         self.current_epoch = 0
         self.best_ema: float | None = None
@@ -119,13 +135,17 @@ class BratsTrainer:
         self.plot_worker: AsyncPlotWorker | None = None
 
         if self.disable_checkpointing and self.val_with_best:
-            raise RuntimeError("--val-best is not compatible with --disable-checkpointing")
+            raise RuntimeError(
+                "--val-best is not compatible with --disable-checkpointing"
+            )
 
     @property
     def epochs(self) -> int:
         return int(self.config.epochs)
 
-    def print_to_log_file(self, *parts: Any, also_print_to_console: bool = True) -> None:
+    def print_to_log_file(
+        self, *parts: Any, also_print_to_console: bool = True
+    ) -> None:
         line = " ".join(str(part) for part in parts)
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         with self.log_file.open("a", encoding="utf-8") as handle:
@@ -227,7 +247,9 @@ class BratsTrainer:
 
         if self.pretrained_weights and not self.validation_only:
             load_pretrained_weights(self.model, self.pretrained_weights)
-            self.print_to_log_file(f"Loaded pretrained weights: {self.pretrained_weights}")
+            self.print_to_log_file(
+                f"Loaded pretrained weights: {self.pretrained_weights}"
+            )
 
         self.plot_worker = AsyncPlotWorker()
         self.train_loader, self.val_loader = self._build_dataloaders()
@@ -241,10 +263,16 @@ class BratsTrainer:
 
     def _fold_split(self) -> tuple[list[str], list[str]]:
         if self.fold >= len(self.splits):
-            raise RuntimeError(f"Fold {self.fold} is outside available splits ({len(self.splits)}).")
-        return list(self.splits[self.fold]["train"]), list(self.splits[self.fold]["val"])
+            raise RuntimeError(
+                f"Fold {self.fold} is outside available splits ({len(self.splits)})."
+            )
+        return list(self.splits[self.fold]["train"]), list(
+            self.splits[self.fold]["val"]
+        )
 
-    def _build_dataloaders(self) -> tuple[SingleThreadedAugmenter, SingleThreadedAugmenter]:
+    def _build_dataloaders(
+        self,
+    ) -> tuple[SingleThreadedAugmenter, SingleThreadedAugmenter]:
         tr_keys, val_keys = self._fold_split()
         dataset_train = self.dataset_class(str(self.training_cases_dir), tr_keys)
         dataset_val = self.dataset_class(str(self.training_cases_dir), val_keys)
@@ -252,9 +280,15 @@ class BratsTrainer:
         model = _unwrap_model(self.model)
         strides = getattr(model, "strides", None) or model.config.strides
         deep_supervision_scales = (
-            get_deep_supervision_scales(strides) if self.config.use_deep_supervision else None
+            get_deep_supervision_scales(strides)
+            if self.config.use_deep_supervision
+            else None
         )
-        regions = self.label_manager.foreground_regions if self.label_manager.has_regions else None
+        regions = (
+            self.label_manager.foreground_regions
+            if self.label_manager.has_regions
+            else None
+        )
 
         train_transforms = build_training_transforms(
             patch_size=BRATS_3D_PATCH_SIZE,
@@ -296,7 +330,9 @@ class BratsTrainer:
             probabilistic_oversampling=self.config.probabilistic_oversampling,
             transforms=val_transforms,
         )
-        return SingleThreadedAugmenter(train_loader, None), SingleThreadedAugmenter(val_loader, None)
+        return SingleThreadedAugmenter(train_loader, None), SingleThreadedAugmenter(
+            val_loader, None
+        )
 
     def save_checkpoint(self, filename: str) -> None:
         if self.disable_checkpointing:
@@ -307,7 +343,9 @@ class BratsTrainer:
         checkpoint = {
             "network_weights": _unwrap_model(self.model).state_dict(),
             "optimizer_state": self.optimizer.state_dict(),
-            "grad_scaler_state": self.grad_scaler.state_dict() if self.grad_scaler is not None else None,
+            "grad_scaler_state": (
+                self.grad_scaler.state_dict() if self.grad_scaler is not None else None
+            ),
             "logging": self.logger.get_checkpoint(),
             "best_ema": self.best_ema,
             "current_epoch": self.current_epoch,
@@ -325,7 +363,9 @@ class BratsTrainer:
         self._write_training_state("running")
 
     def load_checkpoint(self, checkpoint_path: str | os.PathLike[str]) -> None:
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+        checkpoint = torch.load(
+            checkpoint_path, map_location=self.device, weights_only=False
+        )
         _unwrap_model(self.model).load_state_dict(checkpoint["network_weights"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state"])
         if self.grad_scaler is not None and checkpoint["grad_scaler_state"] is not None:
@@ -374,7 +414,9 @@ class BratsTrainer:
         data = batch["data"].to(self.device, non_blocking=True)
         target = batch["target"]
         if isinstance(target, list):
-            target = [item.to(self.device, non_blocking=True).float() for item in target]
+            target = [
+                item.to(self.device, non_blocking=True).float() for item in target
+            ]
         else:
             target = target.to(self.device, non_blocking=True).float()
 
@@ -400,7 +442,9 @@ class BratsTrainer:
         data = batch["data"].to(self.device, non_blocking=True)
         target = batch["target"]
         if isinstance(target, list):
-            target = [item.to(self.device, non_blocking=True).float() for item in target]
+            target = [
+                item.to(self.device, non_blocking=True).float() for item in target
+            ]
         else:
             target = target.to(self.device, non_blocking=True).float()
 
@@ -427,7 +471,11 @@ class BratsTrainer:
         model = _unwrap_model(self.model)
         model.decoder.deep_supervision = enabled
 
-    def on_epoch_end(self, train_outputs: list[dict[str, np.ndarray]], val_outputs: list[dict[str, np.ndarray]]) -> None:
+    def on_epoch_end(
+        self,
+        train_outputs: list[dict[str, np.ndarray]],
+        val_outputs: list[dict[str, np.ndarray]],
+    ) -> None:
         train_collated = collate_outputs(train_outputs)
         val_collated = collate_outputs(val_outputs)
 
@@ -436,7 +484,10 @@ class BratsTrainer:
         tp = np.sum(val_collated["tp_hard"], axis=0)
         fp = np.sum(val_collated["fp_hard"], axis=0)
         fn = np.sum(val_collated["fn_hard"], axis=0)
-        dices = [float(2 * i / (2 * i + j + k)) if (2 * i + j + k) > 0 else float("nan") for i, j, k in zip(tp, fp, fn)]
+        dices = [
+            float(2 * i / (2 * i + j + k)) if (2 * i + j + k) > 0 else float("nan")
+            for i, j, k in zip(tp, fp, fn)
+        ]
         mean_fg_dice = float(np.nanmean(dices))
 
         self.logger.log("train_losses", train_loss, self.current_epoch)
@@ -466,7 +517,11 @@ class BratsTrainer:
             )
             self.plot_worker.check_errors()
         else:
-            self.logger.plot_progress_png(self.output_dir, total_epochs=self.epochs, current_epoch=self.current_epoch)
+            self.logger.plot_progress_png(
+                self.output_dir,
+                total_epochs=self.epochs,
+                current_epoch=self.current_epoch,
+            )
         self.current_epoch += 1
         self._write_training_state("running")
 
@@ -477,7 +532,9 @@ class BratsTrainer:
         for epoch in range(self.current_epoch, self.epochs):
             self.logger.log("epoch_start_timestamps", time(), self.current_epoch)
             self.lr_scheduler.step(self.current_epoch)
-            self.logger.log("lrs", float(self.optimizer.param_groups[0]["lr"]), self.current_epoch)
+            self.logger.log(
+                "lrs", float(self.optimizer.param_groups[0]["lr"]), self.current_epoch
+            )
             self.print_to_log_file(
                 f"Epoch {self.current_epoch} (run {self.current_epoch + 1}/{self.epochs})"
             )
@@ -524,7 +581,9 @@ class BratsTrainer:
         regions = self.label_manager.foreground_regions
 
         for case_id in val_keys:
-            data, _, _, properties = self.dataset_class(str(self.training_cases_dir), [case_id]).load_case(case_id)
+            data, _, _, properties = self.dataset_class(
+                str(self.training_cases_dir), [case_id]
+            ).load_case(case_id)
             image = torch.from_numpy(np.asarray(data)).float()
             logits = predict_sliding_window_logits(
                 self.model,
@@ -533,7 +592,9 @@ class BratsTrainer:
                 device=self.device,
                 mirror_axes=self.config.inference_mirroring_axes,
             )
-            probabilities = self.label_manager.apply_inference_nonlin(logits).cpu().numpy()
+            probabilities = (
+                self.label_manager.apply_inference_nonlin(logits).cpu().numpy()
+            )
             restored_probabilities, segmentation = restore_prediction_to_original_space(
                 probabilities,
                 properties,
@@ -542,11 +603,15 @@ class BratsTrainer:
 
             output_stem = validation_dir / case_id
             if self.export_validation_probabilities:
-                np.savez_compressed(str(output_stem) + ".npz", probabilities=restored_probabilities)
+                np.savez_compressed(
+                    str(output_stem) + ".npz", probabilities=restored_probabilities
+                )
                 with Path(str(output_stem) + ".pkl").open("wb") as handle:
                     pickle.dump(properties, handle)
 
-            write_segmentation_nifti(segmentation, properties, Path(str(output_stem) + ".nii.gz"))
+            write_segmentation_nifti(
+                segmentation, properties, Path(str(output_stem) + ".nii.gz")
+            )
             flair_image = self.raw_dataset_dir / "imagesTr" / f"{case_id}_0003.nii.gz"
             if flair_image.is_file():
                 if self.plot_worker is not None:
@@ -563,7 +628,9 @@ class BratsTrainer:
                     )
 
             reference_file = self.gt_segmentations_dir / f"{case_id}.nii.gz"
-            reference_segmentation = sitk.GetArrayFromImage(sitk.ReadImage(str(reference_file))).astype(np.uint16)
+            reference_segmentation = sitk.GetArrayFromImage(
+                sitk.ReadImage(str(reference_file))
+            ).astype(np.uint16)
             if flair_image.is_file():
                 if self.plot_worker is not None:
                     self.plot_worker.submit_overlay(
@@ -581,7 +648,9 @@ class BratsTrainer:
                 {
                     "reference_file": str(reference_file),
                     "prediction_file": str(Path(str(output_stem) + ".nii.gz")),
-                    "metrics": compute_case_metrics(reference_segmentation, segmentation, regions),
+                    "metrics": compute_case_metrics(
+                        reference_segmentation, segmentation, regions
+                    ),
                 }
             )
             self.print_to_log_file(f"Validated {case_id}")
@@ -597,5 +666,7 @@ class BratsTrainer:
         if self.plot_worker is not None:
             self.close()
         self._set_deep_supervision_enabled(True)
-        self.print_to_log_file("Validation complete", summary["foreground_mean"].get("Dice"))
+        self.print_to_log_file(
+            "Validation complete", summary["foreground_mean"].get("Dice")
+        )
         return summary
