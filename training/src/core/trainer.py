@@ -96,7 +96,9 @@ class BratsTrainer:
         self.dataset_class = infer_preprocessed_dataset_class(
             str(self.training_cases_dir)
         )
-        self.label_manager = load_brats_label_manager(self.dataset_json)
+        self.label_manager = load_brats_label_manager(
+            self.dataset_json
+        )  # region based or label based
         self.output_dir = get_training_output_dir(self.fold)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.logs_dir = get_training_logs_dir(self.fold)
